@@ -1,0 +1,50 @@
+README
+
+This is a compiler in Java for the JOOS language.
+
+REQUIREMENTS
+
+- SableCC installation
+- Jasmin installation (included in this installation)
+- a Unix-compatible environment: to be able to run Bin's sh and csh scripts
+- an installation of Java, version 1.2 or later 
+
+SETTING ENVIRONMENT VARIABLES
+
+This step is required in order to be able to do anything with the compiler.
+The following environment variables must be set:
+- JJOOSDIR: root directory of the JJOOS compiler installation
+- JOOSDIR:  root directory of ordinary JOOS installation
+- JAVADIR: root directory of the JDK installation
+- SABLECCDIR: root directory of the SableCC installation
+
+COMPILING THE COMPILER
+
+1. if grammar has changed, compile it first: Bin/compilegrammar.csh
+2. compile the compiler: Bin/compile.sh
+
+RUNNING THE COMPILER
+
+- compilation into Jasmin files: 
+Bin/jjoos $JOOSDIR/Extern/*.joos <file.java>... <file.joos>...
+
+- compilation into Java class files:
+Bin/jjoosc <file.java>... <file.joos>...
+
+To run JOOS programs that make use of the JOOS library, 
+add the Lib directory to your classpath.
+
+Enjoy!
+
+July 5th, 2000
+
+Othman Alaoui
+oalaou@cs.mcgill.ca
+
+========================================
+
+Modified to use SDK 2 only
+
+September 25, 2000
+
+Laurie Hendren

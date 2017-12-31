@@ -1,0 +1,512 @@
+/*
+ * JOOSJ is Copyright (C) 2000 Othman Alaoui
+ *
+ * Reproduction of all or part of this software is permitted for
+ * educational or research use on condition that this copyright notice is
+ * included in any copy. This software comes with no warranty of any
+ * kind. In no event will the author be liable for any damages resulting from
+ * use of this software.
+ *
+ * email: oalaou@po-box.mcgill.ca
+ */
+
+
+package joosc.fixer;
+
+import joosc.*;
+import joosc.node.*;
+import joosc.analysis.*;
+import java.util.*;
+
+/*
+ * AstFixer
+ * 
+ * Notes
+ *  noshortif 'for' statements are eliminated like all other noshortif
+ *  statements, rather than being converted to the equivalent 'while'
+ *  loops, because this would have the side-effect of introducing 
+ *  another entry point for noshortif statements, not desirable.
+ *
+ * History:
+ *  21 May 2000 - corrected bug: had forgotten formal_list tranformation!
+ *  10 May 2000 - made extension of "Object" class explicit in the AST
+ *   7 May 2000 - added new list flattening transformations that
+ *                tightly couple name and type for field and decl stm
+ *   4 May 2000 - driver (fix) now performs AstFixerSimplestm pass as well
+ *   2 Apr 2000 - A+ additions as pseudo-syntactic sugar completed
+ *                expression cascade collapsing completed
+ *   1 Apr 2000 - stm_no_short_if transformations completed
+ *                constructor streamlining transformation completed
+ *   6 Mar 2000 - list flattening transformations completed
+ *                prototype list transformation: identifier_list
+ *                created
+ */
+public class AstFixer extends DepthFirstAdapter {
+        protected String filename;
+
+        public AstFixer(String fn) { filename = fn; }
+
+        public static void fix(List theProgram) {
+
+	    ClassFile[] programs = (ClassFile[])theProgram.toArray(new ClassFile[0]);
+
+	    Node ast;
+	    String cname;
+	    ClassFile classfile;
+
+	    for(int i = 0; i < programs.length; i++)
+	    {
+		classfile = programs[i];
+		ast = classfile.getAst();
+		cname = classfile.getName();
+		ast.apply(new AstFixer(cname));
+		ast.apply(new AstFixerSimplestm(cname));
+	    }
+        }
+
+        /******************************************************************
+         *              "Object" extension made explicit                  *
+         ******************************************************************/
+         
+        // lines and positions for new structures are fictitious.
+        public void inAClass(AClass node) {
+                TIdentifier id = node.getIdentifier();
+
+                if (node.getExtension() == null && 
+                    ! id.getText().equals("Object")) {
+                        node.setExtension(
+                           new AExtension(
+                              new TExtends(id.getLine(),id.getPos()),
+                              new TIdentifier("Object",id.getLine(),id.getPos())));
+                }
+        }
+        // lines and positions for new structures are fictitious.
+        public void inAExternClass(AExternClass node) {
+                TIdentifier id = node.getIdentifier();
+
+                if (node.getExtension() == null && 
+                    ! id.getText().equals("Object")) {
+                        node.setExtension(
+                           new AExtension(
+                              new TExtends(id.getLine(),id.getPos()),
+                              new TIdentifier("Object",id.getLine(),id.getPos())));
+                }
+        }
+
+    /*
+        public void outATmpField(ATmpField tmpNode) {
+                LinkedList newList = new LinkedList();
+                Iterator iter = ((AIdentifierList)tmpNode.getIdentifierList()).
+                                   getIdentifier().iterator();
+ 
+                // pair field name and type
+                while (iter.hasNext()) {
+                        newList.add(
+                           new AOnefield((TProtected)tmpNode.getProtected().clone(),
+                                         (PType)tmpNode.getType().clone(),
+                                         (TIdentifier)((TIdentifier)iter.next()).clone(),
+                                         (TSemicolon)tmpNode.getSemicolon().clone()));
+                }
+                tmpNode.replaceBy(new AField(newList));
+        }
+    */
+    
+        public void outAFirstField(AFirstField tmpNode) {
+                LinkedList newList = new LinkedList();
+
+                TIdentifier[] identifiers =(TIdentifier[]) ((AIdentifierList)tmpNode.getIdentifierList()).getIdentifier().toArray(new TIdentifier[0]); 
+		
+                // pair field name and type
+                for(int i = 0; i < identifiers.length ; i++)
+		{
+		    newList.add(
+                       new AOnefield((TProtected)tmpNode.getProtected().clone(),
+				     (PType)tmpNode.getType().clone(),
+				     identifiers[i],
+				     (TSemicolon)tmpNode.getSemicolon().clone()));
+                }
+                tmpNode.replaceBy(new AField(newList));
+        }
+        
+    /*
+        public void outATmpdeclStm(ATmpdeclStm tmpNode) {
+                LinkedList newList = new LinkedList();
+                Iterator iter = ((AIdentifierList)tmpNode.getIdentifierList()).
+                                   getIdentifier().iterator();
+ 
+                // pair declared variable names and types
+                while (iter.hasNext()) {
+                        newList.add(
+                           new AOnelocal((PType)tmpNode.getType().clone(),
+                                         (TIdentifier)((TIdentifier)iter.next()).clone(),
+                                         (TSemicolon)tmpNode.getSemicolon().clone()));
+                }
+                tmpNode.replaceBy(new ADeclStm(newList));
+        }
+    */ 
+        public void outADeclFirstStm(ADeclFirstStm tmpNode) {
+                LinkedList newList = new LinkedList();
+ 
+                TIdentifier[] identifiers =(TIdentifier[]) ((AIdentifierList)tmpNode.getIdentifierList()).getIdentifier().toArray(new TIdentifier[0]); 
+		
+		// pair declared variable names and types
+                for(int i = 0; i < identifiers.length ; i++)
+		{
+		    newList.add(
+                           new AOnelocal((PType)tmpNode.getType().clone(),
+                                         identifiers[i],
+                                         (TSemicolon)tmpNode.getSemicolon().clone()));
+                }
+                tmpNode.replaceBy(new ADeclStm(newList));
+        }
+    
+        /* supercons invocation stm integration into constructor stm list */
+    /*
+        public void outATmpConstructor(ATmpConstructor tmpNode) {
+                AConstructor node;
+                ASuperconsStm supercons;
+                LinkedList stmList;
+ 
+                // create a supercons statement using hidden stm alternative
+                supercons = new ASuperconsStm(tmpNode.getSuper(),
+                                              tmpNode.getSuperLPar(),
+                                              tmpNode.getArgumentList(),
+                                              tmpNode.getSuperRPar(),
+                                              tmpNode.getSemicolon());
+                // merge supercons stm with subsequent stm list
+                stmList = new LinkedList(tmpNode.getStm());
+                stmList.addFirst(supercons);
+                // create replacement node using supercons just created
+                node = new AConstructor(tmpNode.getPublic(),
+                                        tmpNode.getIdentifier(),
+                                        tmpNode.getLPar(),
+                                        tmpNode.getFormalList(),
+                                        tmpNode.getRPar(),
+                                        tmpNode.getLBrace(),
+                                        stmList,
+                                        tmpNode.getRBrace());
+                // perform replacement
+                tmpNode.replaceBy(node);
+        }
+    */
+        public void outAConstructor(AConstructor tmpNode) {
+                
+	    tmpNode.setRBrace(new TRBrace());
+	}
+
+        /*******************************************************************
+         *          Bottom-Up Elimination of no_short_if statements        *
+         *******************************************************************/
+    
+        /*
+         * This assumes that all stm_no_short_if children of stm_no_short_if 
+         * in node have been replaced by their stm equivalent.
+         * This is a valid assumption since all the children of node have 
+         * already been visited by this walker (and for some replaced),
+         * this being an "out" routine.
+         *
+         * All what's left to do here is replace the stm_no_short_if
+         * by the equivalent stm using the children of stm_no_short_if.
+         * This requires a switch on the type of stm_no_short_if.
+         */
+    /*
+        public void outATmpIfelseStmNoShortIf(ATmpIfelseStmNoShortIf tmpNode) {
+                PStmNoShortIf oldStmChild;
+
+                oldStmChild = tmpNode.getThenStmNoShortIf();
+                PStm newStmChild1 = null;
+
+                newStmChild1 = convertNoshortifStmToStm(oldStmChild);
+
+                oldStmChild = tmpNode.getElseStmNoShortIf();
+                PStm newStmChild2 = null;
+
+                newStmChild2 = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AIfelseStmNoShortIf(
+                        tmpNode.getIf(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild1,
+                        tmpNode.getElse(),
+                        newStmChild2));
+        }
+    */
+    public void outAIfelseStmNoShortIf(AIfelseStmNoShortIf tmpNode) {
+                PStmNoShortIf oldStmChild;
+
+		oldStmChild = ((ADynamicStm)tmpNode.getThenStm()).getStmNoShortIf();
+                PStm newStmChild1 = null;
+
+                newStmChild1 = convertNoshortifStmToStm(oldStmChild);
+
+                oldStmChild = ((ADynamicStm)tmpNode.getElseStm()).getStmNoShortIf();
+                PStm newStmChild2 = null;
+
+                newStmChild2 = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AIfelseStmNoShortIf(
+                        tmpNode.getIf(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild1,
+                        tmpNode.getElse(),
+                        newStmChild2));
+        }
+ 
+        /*
+         * This assumes that all stm_no_short_if children of stm_no_short_if 
+         * in node have been replaced by their stm equivalent.
+         * This is a valid assumption since all the children of node have 
+         * already been visited by this walker (and for some replaced),
+         * this being an "out" routine.
+         *
+         * All what's left to do here is replace the stm_no_short_if
+         * by the equivalent stm using the children of stm_no_short_if.
+         * This requires a switch on the type of stm_no_short_if.
+         */
+    /*    
+    public void outATmpWhileStmNoShortIf(ATmpWhileStmNoShortIf tmpNode) {
+                PStmNoShortIf oldStmChild = tmpNode.getStmNoShortIf();
+                PStm newStmChild = null;
+
+                newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AWhileStmNoShortIf(
+                        tmpNode.getWhile(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild));
+        }
+    */
+
+        public void outAWhileStmNoShortIf(AWhileStmNoShortIf tmpNode) {
+	        PStmNoShortIf oldStmChild;
+
+		oldStmChild = ((ADynamicStm)tmpNode.getStm()).getStmNoShortIf();
+                
+		PStm newStmChild = null;
+
+                newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AWhileStmNoShortIf(
+                        tmpNode.getWhile(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild));
+        }
+    
+        /*@A+begin*/
+        /*
+         * This assumes that all stm_no_short_if children of stm_no_short_if 
+         * in node have been replaced by their stm equivalent.
+         * This is a valid assumption since all the children of node have 
+         * already been visited by this walker (and for some replaced),
+         * this being an "out" routine.
+         *
+         * All what's left to do here is replace the stm_no_short_if
+         * by the equivalent stm using the children of stm_no_short_if.
+         * This requires a switch on the type of stm_no_short_if.
+         */
+    /*
+      public void outATmpForStmNoShortIf(ATmpForStmNoShortIf tmpNode) {
+                PStmNoShortIf oldStmChild = tmpNode.getStmNoShortIf();
+                PStm newStmChild = null;
+
+		newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AForStmNoShortIf(
+                        tmpNode.getFor(),
+                        tmpNode.getLPar(),
+                        tmpNode.getInitializer(),
+                        tmpNode.getSemicolon1(),
+                        tmpNode.getExp(),
+                        tmpNode.getSemicolon2(),
+                        tmpNode.getUpdater(),
+                        tmpNode.getRPar(),
+                        newStmChild));
+        }
+    */
+        public void outAForStmNoShortIf(AForStmNoShortIf tmpNode) {
+                PStmNoShortIf oldStmChild;
+
+		oldStmChild = ((ADynamicStm)tmpNode.getStm()).getStmNoShortIf();
+		PStm newStmChild = null;
+
+                newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AForStmNoShortIf(
+                        tmpNode.getFor(),
+                        tmpNode.getLPar(),
+                        tmpNode.getInitializer(),
+                        tmpNode.getSemicolon1(),
+                        tmpNode.getExp(),
+                        tmpNode.getSemicolon2(),
+                        tmpNode.getUpdater(),
+                        tmpNode.getRPar(),
+                        newStmChild));
+        }
+        /*@A+end*/
+ 
+        /* 
+         * This is the unique entry point to stm_no_short_if types of nodes.
+         * Once all calls to this method have returned, stm_no_short_if
+         * nodes in the AST become history.
+         *
+         * This assumes that all stm_no_short_if children of stm_no_short_if 
+         * in node have been replaced by their stm equivalent.
+         * This is a valid assumption since all the children of node have 
+         * already been visited by this walker (and for some replaced),
+         * this being an "out" routine.
+         *
+         * All what's left to do here is replace the stm_no_short_if
+         * by the equivalent stm using the children of stm_no_short_if.
+         * This requires a switch on the type of stm_no_short_if.
+         */
+    /*
+         public void outATmpIfelseStm(ATmpIfelseStm tmpNode) {
+                PStmNoShortIf oldStmChild = tmpNode.getStmNoShortIf();
+                PStm newStmChild = null;
+
+                newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AIfelseStm(
+                        tmpNode.getIf(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild,
+                        tmpNode.getElse(),
+                        tmpNode.getStm()));
+        }
+    */
+
+         public void outAIfelseStm(AIfelseStm tmpNode) {
+	        PStmNoShortIf oldStmChild;
+
+		oldStmChild = ((ADynamicStm)tmpNode.getThenStm()).getStmNoShortIf();
+		PStm newStmChild = null;
+
+                newStmChild = convertNoshortifStmToStm(oldStmChild);
+
+                tmpNode.replaceBy(new AIfelseStm(
+                        tmpNode.getIf(),
+                        tmpNode.getLPar(),
+                        tmpNode.getExp(),
+                        tmpNode.getRPar(),
+                        newStmChild,
+                        tmpNode.getElse(),
+                        tmpNode.getElseStm()));
+        }
+ 
+        /*
+         * Core routine shared by all the noshortif statements transformers.
+         */
+        private PStm convertNoshortifStmToStm(PStmNoShortIf oldStmChild) {
+                PStm newStmChild = null;
+
+                if (oldStmChild instanceof ASimpleStmNoShortIf) {
+                        newStmChild = new ASimpleStm(
+                                ((ASimpleStmNoShortIf)oldStmChild).getSimplestm());
+                }
+                else if (oldStmChild instanceof AIfelseStmNoShortIf) {
+                        AIfelseStmNoShortIf castStmChild = 
+                                (AIfelseStmNoShortIf)oldStmChild;
+                        newStmChild = new AIfelseStm(
+                                castStmChild.getIf(),
+                                castStmChild.getLPar(),
+                                castStmChild.getExp(),
+                                castStmChild.getRPar(),
+                                castStmChild.getThenStm(),
+                                castStmChild.getElse(),
+                                castStmChild.getElseStm());
+                }
+                else if (oldStmChild instanceof AWhileStmNoShortIf) {
+                        AWhileStmNoShortIf castStmChild = 
+                                (AWhileStmNoShortIf)oldStmChild;
+                        newStmChild = new AWhileStm(
+                                castStmChild.getWhile(),
+                                castStmChild.getLPar(),
+                                castStmChild.getExp(),
+                                castStmChild.getRPar(),
+                                castStmChild.getStm());
+                }
+                /*@A+begin*/
+                else if (oldStmChild instanceof AForStmNoShortIf) {
+                        AForStmNoShortIf castStmChild = 
+                                (AForStmNoShortIf)oldStmChild;
+                        newStmChild = new AForStm(
+                                castStmChild.getFor(),
+                                castStmChild.getLPar(),
+                                castStmChild.getInitializer(),
+                                castStmChild.getSemicolon1(),
+                                castStmChild.getExp(),
+                                castStmChild.getSemicolon2(),
+                                castStmChild.getUpdater(),
+                                castStmChild.getRPar(),
+                                castStmChild.getStm());
+                }
+                /*@A+end*/
+                else
+                        MyError.fatalError("ASTFixer","unexpected AST node type");
+
+                return newStmChild;
+        }
+ 
+ 
+        /*@A+begin*/
+        /*****************************************************************
+         *           A+ Additions as "pseudo-syntactic sugar"            *
+         *****************************************************************/
+ 
+        /*
+         * Replaces a for stm by a simple stm containing a block simplestm,
+         * whose second statement is a while loop.
+         * 'for (initializer; exp; updater) stm' becomes:
+         * '{ initializer; while (exp) { stm; updater; } }'
+         */
+        public void outAForStm(AForStm tmpNode) {
+                AWhileStm whileStm;
+                LinkedList whileBodyStmList, stmList;
+                ASimpleStm whileBody;
+
+                // form stm sequence to be in while loop body
+                whileBodyStmList = new LinkedList();
+                whileBodyStmList.add(tmpNode.getStm());
+                // stm_exp must first be made into an actual stm
+                whileBodyStmList.add(new ASimpleStm(new AExpSimplestm(
+                                                       tmpNode.getUpdater(),
+                                                       new TSemicolon())));
+                // form while loop body
+                whileBody = new ASimpleStm(
+                               new ABlockSimplestm(
+                                  new TLBrace(),
+                                  whileBodyStmList,
+                                  new TRBrace()));
+                // form while stm
+                whileStm = new AWhileStm(new TWhile(),
+                                     new TLPar(),
+                                     tmpNode.getExp(),
+                                     new TRPar(),
+                                     whileBody);
+
+                // form stm sequence made of initializer and while stm
+                stmList = new LinkedList();
+                // stm_exp must first be made into an actual stm
+                stmList.add(new ASimpleStm(new AExpSimplestm(
+                                              tmpNode.getInitializer(),
+                                              new TSemicolon())));
+                stmList.add(whileStm);
+
+                // replace node by a simple block stm whose body is stm sequence
+                tmpNode.replaceBy(new ASimpleStm(
+                                     new ABlockSimplestm(
+                                        new TLBrace(),
+                                        stmList,
+                                        new TRBrace())));
+        }           
+}

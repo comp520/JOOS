@@ -1,0 +1,5 @@
+These programs are used to test very simple parts of JOOS.  They should
+not be considered as "real" programs,  but as little examples to 
+illustrate basic points about JOOS/Java.  The Makefile included in
+this directory shows how to compile each program,  and which files
+go together to make small applications.

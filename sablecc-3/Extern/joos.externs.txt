@@ -1,0 +1,1522 @@
+Hey whats up prof!
+// java.applet.Applet - page 234 Nutshell 1.ed - 275
+Nutshell 2.ed
+extern public class Applet extends Panel in "java.applet" {
+  public Applet();
+  public void destroy(); // empty
+  public AppletContext getAppletContext();
+  public String getAppletInfo();
+  public AudioClip getAudioClip(URL url,String name);
+  public URL getCodeBase();
+  public URL getDocumentBase();
+  public Image getImage(URL url, String name);
+  public String getParameter(String name);
+  public void init(); // empty
+  public boolean isActive();
+  public void play(URL url, String name);
+  public void resize(int width, int height); // overrides Component.resize()
+  public final void setStub(AppletStub stub);
+  public void showStatus(String msg);
+  public void start(); // empty
+  public void stop();  // empty
+}
+
+// java.applet.AppletContext - page 235 Nutshell 1.ed - 277 Nutshell 2.ed
+//   should be an interface
+extern public abstract class AppletContext in "java.applet" {
+  public AppletContext();
+  public abstract Applet getApplet(String name);
+  // public abstract Enumeration getApplets();
+  public abstract AudioClip getAudioClip(URL url);
+  public abstract Image getImage(URL url);
+  public abstract void showDocument(URL url);
+  public abstract void showStatus(String status);
+}
+
+// java.applet.AppletStub - page 235 Nutshell 1.ed - 277 Nutshell 2.ed
+// should be an interface
+extern public abstract class AppletStub in "java.applet" {
+  public AppletStub();
+  public abstract void appletResize(int width, int height);
+  public abstract AppletContext getAppletContext();
+  public abstract URL getCodeBase();
+  public abstract URL getDocumentBase();
+  public abstract String getParameter(String name);
+  public abstract boolean isActive();
+}
+
+// java.applet.AudioClip  - page 236 Nutshell 1.ed - 277 Nutshell 2.ed 
+// should be an interface 
+extern public abstract class AudioClip in "java.applet" {
+  public AudioClip();
+  public abstract void loop();
+  public abstract void play();
+  public abstract void stop();
+}
+// -----------------------------------------------------------------
+// The following classes are defined in the standard java awt class
+//   libraries,  and are described in the book:
+//   "Java in a Nutshell", by David Flanagan.
+// -----------------------------------------------------------------
+
+// java.awt.BorderLayout -  page 240 Nutshell 1.ed - page 286 Nutshell 2.ed
+extern public class BorderLayout extends LayoutManager in "java.awt" { 
+// should be extends Object implements LayoutManager
+  public BorderLayout();
+  public BorderLayout(int hgap, int vgap);
+  public void addLayOutComponent(String name, Component comp);
+  public void layoutContainer(Container target);
+  public Dimension minimumLayoutSize(Container target);
+  public Dimension perferredLayoutSize(Container target);
+  public void removeLayoutComponent(Component comp);
+  public String toString(); // overrides Object.toString()
+}
+
+// java.awt.Button - page 240 Nutshell 1.ed - 287 Nutshell 2.ed
+extern public class Button extends Component in "java.awt" {
+  public Button();
+  public Button(String label);
+  public synchronized void addNotify(); // overrides Component.addNotify();
+  public String getLabel();
+  public void setLabel(String label);
+}
+
+// java.awt.Canvas - page 240 Nutshell 1.ed - 287 Nutshell 2.ed
+extern public class Canvas extends Component in "java.awt" {
+  public Canvas();
+  public synchronized void addNotify(); // overrides Component.addNotify();
+  public void paint(Graphics g); // overrides Component.paint()
+}
+ 
+// java.awt.CardLayout - page 241 Nutshell 1.ed - 288 Nutshell 2.ed
+extern public class CardLayout extends LayoutManager in "java.awt" {
+// should be extends Object implements LayoutManager
+  public CardLayout();
+  public CardLayout(int hgap, int vgap);
+  public void addLayoutComponent(String name, Component comp);
+  public void first(Container parent);
+  public void last(Container parent);
+  public void layoutContainer(Container parent);
+  public Dimension minimumLayoutSize(Container parent);
+  public void next(Container parent);
+  public Dimension preferredLayoutSize(Container parent);
+  public void previous(Container parent);
+  public void removeLayoutComponent(Component comp);
+  public void show(Container parent, String name);
+  public String toString(); // overrides Object.toString();
+}
+
+// java.awt.Checkbox - page 241 Nutshell 1.ed - 288 Nutshell 2.ed
+extern public class Checkbox extends Component in "java.awt" {
+  public Checkbox();
+  public Checkbox(String label);
+  public Checkbox(String label, boolean state);
+  public Checkbox(String label, boolean state, CheckboxGroup group);
+  public Checkbox(String label, CheckboxGroup group, boolean state);
+  public synchronized void addNotify(); // overrides Component.addNotify();
+  public CheckboxGroup getCheckboxGroup();
+  public String getLabel();
+  public boolean getState();
+  public void setCheckboxGroup(CheckboxGroup g);
+  public void setLabel(String label);
+  public void setState(boolean state);
+}
+
+// java.awt.CheckboxGroup - page 242 Nutshell 1.ed - 289 Nutshell 2.ed
+extern public class CheckboxGroup extends Object in "java.awt" {
+  public CheckboxGroup(); // empty
+  public Checkbox getCurrent();
+  public synchronized void setCurrent(Checkbox box);
+  public String toString(); // overrides Object.toString()
+}
+
+// java.awt.CheckboxMenuItem - page 242 Nutshell 1.ed - 290 Nutshell 2.ed
+extern public class CheckboxMenuItem extends MenuItem in "java.awt" {
+  public CheckboxMenuItem();
+  public CheckboxMenuItem(String label);
+  public CheckboxMenuItem(String label, boolean state);
+  public synchronized void addNotify(); // overrides Component.addNotify();
+  public boolean getState();
+  public String paramString(); // overrides MenuItem.paramString()
+  public void setState(boolean t);
+}
+ 
+// java.awt.Choice - page 243 Nutshell 1.ed - 290 Nutshell 2.ed
+extern public class Choice extends Component in "java.awt" {
+  public Choice();
+  public synchronized void addItem(String item);
+  public synchronized void addNotify(); // overrides Component.addNotify();
+  public int countItems();
+  public String getItem(int index);
+  public int getSelectedIndex();
+  public String getSelectedItem();
+  public synchronized void select(int pos); // throws IllegalArgumentException
+  // public void select(String str);
+}
+
+
+// java.awt.Color - page 243 Nutshell 1.ed - 291 Nutshell 2.ed
+// see also joos.lib.JoosConstants for color constants
+extern public class Color in "java.awt" {
+  public Color(int r, int g, int b);
+  public Color(int rgb);
+  public Color brighter();
+  public Color darker();
+  public boolean equals(Object obj); // overrides Object.equals()
+  public int getBlue();
+  public int getGreen();
+  public int getRGB();
+  public int getRed();
+  public String toString(); // overrides Ojbect.toString();
+}  
+
+// java.awt.Component - page 244 Nutshell 1.ed - 292 Nutshell 2.ed
+// should be extends Object, but need to stick in ImageObserver
+extern public abstract class Component extends ImageObserver in "java.awt" {
+  public Component();
+  public void addNotify();
+  public Rectangle bounds();
+  public int checkImage(Image image, ImageObserver observer);
+  public Image createImage(int width, int height);
+  public void deliverEvent(Event e);
+  public synchronized void disable();
+  public synchronized void enable();
+  // public void enable(boolean cond);
+  public Color getBackground();
+  // public synchronized ColorModel getColorModel();
+  public Font getFont();
+  public FontMetrics getFontMetrics(Font font);
+  public Color getForeground();
+  public Graphics getGraphics();
+  public Container getParent();
+  // public ComponentPeer getPeer();
+  public Toolkit getToolkit();
+  public boolean gotFocus(Event evt, Object what);
+  public boolean handleEvent(Event evt);
+  public synchronized void hide();
+  public boolean ImageUpdate(Image img, int flags, int x, int y, int w, int h);
+  public synchronized boolean inside(int x, int y);
+  public void invalidate();
+  public boolean isEnabled();
+  public boolean isShowing();
+  public boolean isValid();
+  public boolean isVisible();
+  public boolean keyDown(Event evt, int key);
+  public boolean keyUp(Event evt, int key);
+  public void layout();  // empty
+  public void list();
+  public Component locate(int x, int y);
+  public Point location();
+  public boolean lostFocus(Event evt, Object what);
+  public Dimension minimumSize();
+  public boolean mouseDown(Event evt, int x, int y);
+  public boolean mouseDrag(Event evt, int x, int y);
+  public boolean mouseEnter(Event evt, int x, int y);
+  public boolean mouseExit(Event evt, int x, int y);
+  public boolean mouseMove(Event evt, int x, int y);
+  public boolean mouseUp(Event evt, int x, int y);
+  public void move(int x, int y);
+  public void nextFocus();
+  public void paint(Graphics g); // empty
+  public void paintAll(Graphics g);
+  public boolean postEvent(Event e);
+  public Dimension preferredSize();
+  // public boolean prepareImage(Image image,ImageObserver observer);
+  public void print(Graphics g);
+  public void printAll(Graphics g);
+  public synchronized void removeNotify();
+  public void repaint();
+  public void requestFocus();
+  public synchronized void reshape(int x, int y, int width, int height);
+  public void resize(int width, int height);
+  public synchronized void setBackground(Color c);
+  public synchronized void setCursor(Cursor cursor);
+  public synchronized void setFont(Font f); 
+  public synchronized void setForeground(Color c);
+  public synchronized void show();
+  // public void show(boolean cond);
+  public Dimension size();
+  public String toString(); // overrides Object.toString()
+  public void update(Graphics g);
+  public void validate();
+}
+
+// java.awt.Container - page 246 Nutshell 1.ed - 295 Nutshell 2.ed
+// see also joos.lib.JoosContainer for add(Sring name, Component comp)
+extern public abstract class Container extends Component in "java.awt" {  
+  public Container();
+  public Component add(Component comp);
+  // public Component add(String name, Component comp);
+  // public Component add(Component comp, int pos);
+  public synchronized void addNotify(); // overrides Component.addNotify()
+  public int countComponents();
+  public void deliverEvent(Event e);
+  public synchronized Component getComponent(int n);
+  public LayoutManager getLayout();
+  public Insets insets();
+  public synchronized void layout(); // overrides Component.layout()
+  //public void list(PrintStream out, int indent);// overrides Component.list()
+  public Component locate(int x, int y); // overrides Component.locate()
+  public synchronized Dimension minimumSize(); // overrides Component
+  public void paintComponents(Graphics g);
+  public synchronized Dimension preferredSize(); // overrrides Component
+  public void printComponents(Graphics g);
+  public synchronized void remove(Component comp);
+  public synchronized void removeAll();
+  public synchronized void removeNotify(); // overrides Component
+  public void setLayout(LayoutManager mgr);
+  public synchronized void validate(); // overrides Component 
+}
+
+// java.awt.Cursor - not in java 1.0 - 297 Nutshell 2.ed
+extern public class Cursor extends Object in "java.awt" {
+// see also joos.lib.JoosConstants,   C_DEFAULT_CURSOR;
+//                                    C_CROSSHAIR_CURSOR
+//                                    C_HAND_CURSOR
+//                                    C_MOVE_CURSOR
+//                                    C_TEXT_CURSOR
+//                                    C_WAIT_CURSOR
+//                                    C_N_RESIZE_CURSOR
+//                                    C_S_RESIZE_CURSOR
+//                                    C_W_RESIZE_CURSOR
+//                                    C_E_RESIZE_CURSOR
+//                                    C_NE_RESIZE_CURSOR
+//                                    C_NW_RESIZE_CURSOR
+//                                    C_SE_RESIZE_CURSOR
+//                                    C_SW_RESIZE_CURSOR
+  public Cursor(int type);
+  public Cursor getDefaultCursor();  
+  public Cursor getPredefinedCursor(int type);
+  public int getType();
+}
+
+
+// java.awt.Dialog - page 247 Nutshell 1.ed - 298 Nutshell 2.ed
+extern public class Dialog extends Window in "java.awt" {
+  public Dialog(Frame parent);
+  public Dialog(Frame parent, boolean modal); 
+  public Dialog(Frame parent, String title); 
+  public Dialog(Frame parent, String title, boolean modal); 
+  public synchronized void addNotify(); // overrides Window
+  public String getTitle();
+  public boolean isModal();
+  public boolean isResizable();
+  public void setResizable(boolean resizable);
+  public void setTitle(String title);
+}
+
+// java.awt.Dimension - page 248 Nutshell 1.ed - 299 Nutshell 2.ed
+// see also joos.lib.Dimension
+extern public class Dimension extends Object in "java.awt" {
+  public Dimension();
+  public Dimension(Dimension d);
+  public Dimension(int width, int height);
+  public Dimension getSize();	
+  public void setSize(int width, int height);
+  public String toString(); // overrides Object.toString() 
+}
+
+// java.awt.Event - page 248 Nutshell 1.ed - 299 Nutshell 2.ed
+// see also java.lib.JoosConstants
+// see also java.lib.JoosEvent
+extern public class Event extends Object in "java.awt" {
+
+  public Event(Object target, int id, Object arg);
+  public boolean controlDown();
+  public boolean metaDown();
+  public boolean shiftDown();
+  public String toString(); // overrides Object.toString()
+  public void translate(int x, int y);
+}
+
+// java.awt.FileDialog - page 250 Nutshell 1.ed - 301 Nutshell 2.ed
+// see also java.lib.JoosConstants 
+extern public class FileDialog extends Dialog in "java.awt" {
+  public FileDialog(Frame parent);
+  public FileDialog(Frame parent, String title);
+  public FileDialog(Frame parent, String title, int mode);
+  public synchronized void addNotify(); // overrides Dialog.addnotify()
+  public String getDirectory();
+  public String getFile();
+  // public FilenameFilter getFilenameFilter();
+  public int getMode();
+  public void setDirectory(String dir);
+  public void setFile(String file);
+  // public void setFilenameFilter(FilenameFilter filter);
+  public void setMode(int mode);
+}
+
+// java.awt.FlowLayout - page 250 Nutshell 1.ed - 302 Nutshell 2.ed
+// see also java.lib.JoosConstants 
+extern public class FlowLayout extends LayoutManager in "java.awt" {
+// should be extends Object implements LayoutManager
+  public FlowLayout();
+  public FlowLayout(int align);
+  public FlowLayout(int align, int hgap, int vgap);
+  public void addLayoutComponent(String name, Component comp);
+  public void layoutContainer(Container target);
+  public Dimension minimumLayoutSize(Container target);
+  public Dimension preferredLayoutSize(Container target);
+  public void removeLayoutComponent(Component comp); // empty
+  public void setVgap(int vgap);
+  public void setHgap(int hgap);
+  public String toString(); // overrides Object.toString()
+}
+
+// java.awt.Font - page 251 Nutshell 1.ed - 303 Nutshell 2.ed
+//   also see joos.lib.JoosConstants
+extern public class Font extends Object in "java.awt" {
+  public Font(String name, int style, int size);
+  public boolean equals(Object obj); // overrides Object.equals()
+  public String getFamily();
+  public String getName();
+  public int getSize();
+  public int getStyle();
+  public boolean isBold();
+  public boolean isItalic();
+  public boolean isPlain();
+  public String toString(); // overrides Object.toString();
+}
+
+// java.awt.FontMetrics - page 252 Nutshell 1.ed - 304 Nutshell 2.ed
+extern public class FontMetrics extends Object in "java.awt" {
+  public FontMetrics(Font font);  // should be protected 
+  public int charWidth(int ch);
+  public int getAscent();
+  public int getDescent();
+  public Font getFont();
+  public int getHeight();
+  public int getLeading();
+  public int getMaxAdvance();
+  public int getMaxAscent();
+  public int getMaxDecent();
+  public int getMaxDescent();
+  public int stringWidth(String str);
+  public String toString(); // overrides Object
+}
+
+// java.awt.Frame - page 252 Nutshell 1.ed - 305 Nutshell 2.ed
+//   also see joos.lib.JoosConstants
+extern public class Frame extends Window in "java.awt" { 
+// implements MenuContainer
+  public Frame();
+  public Frame(String title);
+  public synchronized void addNotify(); // overrides Window.addNotify()
+  public synchronized void dispose();   // overrides Window.dispose()
+  public int getCursorType();
+  public Image getIconImage();
+  public MenuBar getMenuBar();
+  public String getTitle();
+  public boolean IsResizable();
+  // public synchronized void remove(MenuComponent m); // problem with override
+                                                       // of remove in Container
+  public void SetCursor(int cursorType);
+  public void setIconImage(Image image);
+  public synchronized void setMenuBar(MenuBar mb);
+  public void setResizable(boolean resizable);
+  public void setTitle(String title);
+}
+
+// java.awt.Graphics - page 254 Nutshell 1.ed - 306 Nutshell 2.ed
+extern public abstract class Graphics extends Object in "java.awt" {
+  public Graphics();
+  public abstract void clearRect(int x, int y, int width, int height); 
+  public abstract void clipRect(int x, int y, int width, int height);  
+  public abstract void copyArea(int x, int y, int width, int height, 
+                                                            int dx, int dy);
+  public Graphics create(int x, int y, int width, int height);
+  public abstract void dispose();  
+  public void draw3DRect(int x, int y, int width, int height, boolean raised); 
+  public abstract void drawArc(int x, int y, int width, int height, 
+                                  int startAngle, int arcAngle); 
+  public abstract boolean drawImage(Image img, int x, int y, 
+                                        ImageObserver observer); 
+  public abstract void drawLine(int x1, int y1, int x2, int y2); 
+  public abstract void drawOval(int x, int y, int width, int height); 
+  public void drawPolygon(Polygon p);
+  public void drawRect(int x, int y, int width, int height);
+  public abstract void drawRoundRect(int x, int y, int width, int height, 
+                               int arcWidth, int arcHeight);
+  public abstract void drawString(String str, int x, int y);  
+  public void fill3DRect(int x, int y, int width, int height, boolean raised); 
+  public abstract void fillArc(int x, int y, int width, int height, 
+                               int startAngle, int arcAngle); 
+  public abstract void fillOval(int x, int y, int width, int height); 
+  public void fillPolygon(Polygon p);
+  public abstract void fillRect(int x, int y, int width, int height); 
+  public abstract void fillRoundRect(int x, int y, int width, int height,
+                                 int arcWidth, int arcHeight);
+  public void finalize();
+  public abstract Rectangle getClipRect();
+  public abstract Color getColor(); 
+  public abstract Font getFont(); 
+  public abstract FontMetrics getFontMetrics(Font f);
+  public abstract void setColor(Color c); 
+  public abstract void setFont(Font font); 
+  public abstract void setPaintMode(); 
+  public abstract void setXORMode(Color c1);
+
+  public String toString(); // overrides Object
+  public abstract void translate(int x, int y); 
+}
+
+// java.awt.GridBagConstraints - page 255 Nutshell 1.ed - 307 Nutshell 2.ed
+//    see also joos.lib.JoosConstants
+//    see also joos.lib.JoosGridBagConstraints
+extern public class GridBagConstraints extends Object in "java.awt" {
+// implements Cloneable
+  public GridBagConstraints();
+}
+
+// java.awt.GridBagLayout - page 256 Nutshell 1.ed - 309 Nutshell 2.ed
+//      see also joos.lib.JoosConstants 
+extern public class GridBagLayout extends LayoutManager in "java.awt" {
+// implements LayoutManager
+  public GridBagLayout();
+  public void addLayOutComponent(String name, Component comp);
+  public GridBagConstraints getConstraints(Component comp);
+  public Point getLayoutOrigin();
+  public void layoutContainer(Container target);
+  public Point location(int x, int y);
+  public Dimension minimumLayoutSize(Container target);
+  public Dimension perferredLayoutSize(Container target);
+  public void removeLayoutComponent(Component comp); // empty
+  public void setConstraints(Component comp, GridBagConstraints constraints);
+  public String toString(); // overrides Object.toString()
+}
+
+// java.awt.GridLayout - page 257 Nutshell 1.ed - 310 Nutshell 2.ed
+extern public class GridLayout extends LayoutManager in "java.awt" {
+  // implements LayoutManager
+  public GridLayout();
+  public GridLayout(int rows, int cols);
+  public GridLayout(int rows, int cols, int Hgap, int Vgap);
+  public void addLayOutComponent(String name, Component comp);
+  public int getColumns();
+  public int getHgap();
+  public int getRows();
+  public int getVgap();
+  public void layoutContainer(Container parent);
+  public Dimension minimumLayoutSize(Container parent);
+  public Dimension perferredLayoutSize(Container parent);
+  public void removeLayoutComponent(Component comp); // empty
+  public void setColumns(int cols);
+  public void setHgap(int hgap);
+  public void setRows(int rows);
+  public void setVgap(int vgap);
+  public String toString(); // overrides Object.toString();
+}
+
+// java.awt.Image - page 258 Nutshell 1.ed - 311 Nutshell 2.ed
+// see also joos.lib.JoosConstants 
+extern public abstract class Image extends Object in "java.awt" {
+  public Image();
+  public abstract void flush();
+  public abstract Graphics getGraphics();
+  public abstract int getHeight(ImageObserver observer);
+  public abstract Object getProperty(String name, ImageObserver obs);
+  public abstract ImageProducer getSource();
+  public abstract int getWidth(ImageObserver observer);
+}
+
+// java.awt.image.ImageConsumer - page 275 Nutshell 1.ed - 365 Nutshell 2.ed
+// should be an interface - Do not try to extend this in a JOOS program
+extern public abstract class ImageConsumer extends Object in "java.awt.image" {
+  public ImageConsumer();
+  public abstract void imageComplete(int status);
+  // public abstract void setColorModel(ColorModel m);
+  public abstract void setDimensions(int width, int height);
+  public abstract void setHints(int hintflags);
+}
+
+// java.awt.image.ImageObserver - page 276 Nutshell 1.ed - 367 Nutshell 2.ed
+// should be an interface - DO not try to extend this in a JOOS program
+extern public abstract class ImageObserver extends Object in "java.awt.image" {
+  public ImageObserver();
+  public abstract boolean imageUpdate(Image img, int infoflags,
+                                      int x, int y, int w, int h);
+}
+
+// java.awt.image.ImageProducer - page 276 Nutshell 1.ed - 367 Nutshell 2.ed
+// should be an interface - do not try to extend this in a JOOS program
+extern public abstract class ImageProducer extends Object in "java.awt.image" {
+  public ImageProducer();
+  public abstract void addConsumer(ImageConsumer ic);
+  public abstract boolean isConsumer(ImageConsumer ic);
+  public abstract void removeConsumer(ImageConsumer ic);
+  public abstract void requestTopDownLeftRightResend(ImageConsumer ic);
+  public abstract void startProduction(ImageConsumer ic);
+}
+                        
+// java.awt.Insets - page 258 Nutshell 1.ed - 312 Nutshell 2.ed
+extern public class Insets extends Object in "java.awt" { 
+  // implements Cloneable
+  public Insets(int top, int left, int bottom, int right);
+  public String toString(); // overrides Object.toString()
+}
+ 
+// java.awt.Label - page 259 Nutshell 1.ed - 313 Nutshell 2.ed
+//    see also joos.lib.JoosConstants (note that you must use
+//            LABEL_CENTER() instead of CENTER,  same for LEFT and RIGHT.
+extern public class Label extends Component in "java.awt" {
+  public Label();
+  public Label(String label);
+  public Label(String label, int alignment);
+  public synchronized void addNotify(); // overrides Component.addNotify()
+  public int getAlignment();
+  public void setAlignment(int alignment); // throws IllegalArgument Exc
+  public String getText();
+  public void setText(String s);
+}
+
+// java.awt.LayoutManager - page 259 Nutshell 1.ed - 313 Nutshell 2.ed
+//    should be public abstract interface LayoutManager 
+//    do NOT try to extend this is a JOOS program 
+extern public abstract class LayoutManager extends Object in "java.awt" {
+  public LayoutManager();
+  public abstract void addLayoutComponent(String name, Component comp);
+  public abstract void layoutContainer(Container parent);
+  public abstract Dimension minimumLayoutSize(Container parent);
+  public abstract Dimension preferredLayoutSize(Container parent);
+  public abstract void removeLayoutComponent(Component comp);
+}
+
+// java.awt.List - page 260 Nutshell 1.ed - Nutshell 2.ed 314
+extern public class List extends Component in "java.awt" {
+  public List();
+  public List(int rows);
+  public List(int rows, boolean multipleSelections);
+  public synchronized void addItem(String item);
+  //public synchronized void addItem(String item, int index);
+  public synchronized void addNotify(); // overrides Component.addNotify()
+  public boolean allowsMultipleSelections();
+  public synchronized void clear();
+  public int countItems();
+  public synchronized void delItem(int position);
+  public synchronized void delItems(int start, int end);
+  public synchronized void deselect(int index);
+  public String getItem(int index);
+  public int getRows();
+  public synchronized int getSelectedIndex();
+  public synchronized int getSelectedItem();
+  public int getVisibleIndex();
+  public synchronized boolean isSelected(int index);
+  public void makeVisible(int index);
+  public Dimension mimimumSize(); // overrides Component.minimumSize()
+  public Dimension preferredSize(); // overrides Component.preferredSize()
+  public synchronized void removeNotify(); // overrides Component.removeNotify()
+  public synchronized void replaceItem(String newValue, int index);
+  public synchronized void select(int index);
+  public void setMultipleSelections(boolean v);
+}
+
+// java.awt.MediaTracker - page 261 Nutshell 1.ed - 316 Nutshell 2.ed
+// see also joos.lib.JoosConstants 
+// see also joos.lib.JoosMediaTracker that gives new versions
+//            of waitForAll and waitForId that return bools instead
+//            of throwing InterruptedException
+extern public class MediaTracker extends Object in "java.awt" {
+  public MediaTracker(Component comp);
+  public void addImage(Image image, int d);
+  // public void addImage(Image image, int d, int w, int h);
+  // public boolean checkAll();
+  public synchronized boolean checkAll(boolean load);
+  // public boolean checkID(int id);
+  public synchronized boolean checkID(int id,boolean load);
+  public synchronized boolean isErrorAny();
+  public synchronized boolean isErrorID(int id);
+  public int statusAll(boolean load);
+  public int statusID(int id, boolean load);
+  // public void waitForAll() throws InterruptedException;
+  // public void waitForID(int id) throws InterruptedException;
+}
+
+// java.awt.Menu - page 262 Nutshell 1.ed - 317 Nutshell 2.ed
+extern public class Menu extends MenuItem in "java.awt" {
+  // implements MenuContainer
+  public Menu();
+  public Menu(String label);
+  public Menu(String label, boolean tearOff);
+  public synchronized MenuItem add(MenuItem mi);
+  // public void add(String label);
+  public synchronized void addNotify(); // overrides MenuItem.addNotify()
+  public void addSeparator();
+  public int countItems();
+  public MenuItem getItem(int index);
+  public boolean isTearOff();
+  public synchronized void remove(int index);
+  // public synchronized void remove(MenuComponent item);
+  public synchronized void removeNotify(); // overrides MenuComponent.removeNotify()
+}
+
+// java.awt.MenuBar - page 262 Nutshell 1.ed - 317 Nutshell 2.ed
+extern public class MenuBar extends MenuComponent in "java.awt" {
+  // implements MenuContainer
+  public MenuBar(); // empty
+  public synchronized Menu add(Menu m);
+  public synchronized void addNotify();
+  public int countMenus();
+  public Menu getHelpMenu();
+  public Menu getMenu(int i);
+  public synchronized void remove(int index);
+  // public synchronized void remove(MenuComponent m);
+  public void removeNotify(); // overrides MenuComponent.removeNotify()
+  public synchronized void setHelpMenu(Menu m);
+}
+
+// java.awt.MenuComponent - page 263 Nutshell 1.ed - 318 Nutshell 2.ed
+extern public abstract class MenuComponent extends Object in "java.awt" {
+  public MenuComponent(); // empty
+  public Font getFont();
+  //public MenuContainer getParent();
+  //public MenuComponentPerr getPeer();
+  public boolean postEvent(Event evt);
+  public void removeNotify();
+  public void setFont(Font f);
+  public String toString(); // overrides Object.toString()
+}
+
+// java.awt.MenuContainer - page 263 Nutshell 1.ed - 319 Nutshell 2.ed
+// public abstract interface MenuContainer {
+//   public abstract Font getFont();
+//   public abstract boolean postEvent(Event evt);
+//   public abstract void remove(MenuComponent comp);
+// } 
+
+// java.awt.MenuItem - page 264 Nutshell 1.ed - 319 Nutshell 2.ed
+extern public class MenuItem extends MenuComponent in "java.awt" {
+  public MenuItem();
+  public MenuItem(String label);
+  public MenuItem(String label, MenuShortcut s);
+  public synchronized void addNotify();
+  public void disable();
+  // public void enable();
+  public void enable(boolean cond);
+  public String getLabel();
+  public boolean isEnabled();
+  // public String paramString(); // overrides MenuComponent.paramString()
+  public void setLabel(String label); 
+}
+
+// java.awt.MenuShortcut - Not in Java 1.0 - Nutshell 2.ed 320
+extern public class MenuShortcut extends Object in "java.awt" {
+  public MenuShortcut(int key);
+  public MenuShortcut(int key, boolean useShiftModifier);
+  public boolean equals(Object obj);
+  public int getKey();
+  public String toString();
+  public boolean usesShiftModifier();
+}
+
+// java.awt.Panel - page 264 Nutshell 1.ed - 321 Nutshell 2.ed
+extern public class Panel extends Container in "java.awt" {
+  public Panel();
+  public Panel(LayoutManager layout);
+  public synchronized void addNotify(); // overrides Container.addNotify()
+}
+
+// java.awt.Point - page 265 Nutshell 1.ed - 321 Nutshell 2.ed
+extern public class Point extends Object in "java.awt" {
+  public Point();
+  public Point(Point p);
+  public Point(int x, int y);
+  public boolean equals(Object obj); // overrides Object.equals()
+  public Point getLocation();
+  public void setLocation(int x, int y);
+  public void move(int x, int y);
+  public String toString(); // overrides Object.toString()
+  public void translate(int x, int y);
+}
+    
+// java.awt.Polygon - page 265 Nutshell 1.ed - 322 Nutshell 2.ed
+extern public class Polygon extends Object in "java.awt" {
+  public Polygon();
+  public void addPoint(int x, int y);
+  public boolean contains(int x, int y);
+  public Rectangle getBoundingBox();
+  public boolean Inside(int x, int y);
+  public void translate(int deltaX, int deltaY);
+}
+
+// java.awt.PopupMenu - not in Java 1.0 - 322 Nutshell 2.ed
+extern public class PopupMenu extends Menu in "java.awt" {
+  public PopupMenu();
+  public PopupMenu(String label);
+  public synchronized void addNotify();
+  public void show(Component origin, int x, int y);
+}
+
+
+// java.awt.Rectangle - page 265 Nutshell 1.ed - 324 Nutshell 2.ed
+// see also JoosRectangle to get at instance variables
+extern public class Rectangle extends Object in "java.awt" {
+  public Rectangle();
+  public Rectangle(Rectangle r);
+  public Rectangle(int x, int y, int width, int height);
+  public Rectangle(int width, int height);
+  public Rectangle(Point p,Dimension d);
+  public Rectangle(Point p);
+  public Rectangle(Dimension d);
+  public void add(Rectangle r);
+  public boolean equals(Object obj); // overrides Object.equals()
+  public void grow(int h, int v);
+  public boolean inside(int x, int y);
+  public Rectangle intersection(Rectangle r);
+  public boolean intersects(Rectangle r);
+  public boolean isEmpty();
+  public void move(int x, int y);
+  public void reshape(int x, int y, int width, int height);
+  public void resize(int width, int height);
+  public void setBounds(int x, int y, int width, int height);
+  public void setLocation(int x, int y);
+  public void setSize(int width, int height);
+  public String toString(); // Overrides Object.toString()
+  public void translate(int x, int y);
+  public Rectangle union(Rectangle r); 
+}
+
+// java.awt.ScrollPane - Not in Java 1.0 - 325 Nutshell 2.ed
+// see also joos.lib.JoosConstants, SCROLLBARS_ALWAYS
+//                                  SCROLLBARS_AS_NEEDED
+//                                  SCROLLBARS_NEVER
+extern public class ScrollPane extends Container in "java.awt" {
+  public ScrollPane();
+  public ScrollPane(int scrollbarDisplayPolicy);
+  public void addNotify();
+  public void doLayout();
+  public int getHScrollbarHeight();
+  public Point getScrollPosition();
+  public int getScrollbarDisplayPolicy();
+  public int getVScrollbatWidth();
+  public Dimension getViewportSize();
+  public void printComponents(Graphics g);
+  public void setLayout(LayoutManager mgr);
+  public void setScrollPosition(int x, int y);
+}
+
+// java.awt.Scrollbar - page 266 Nutshell 1.ed - 327 Nutshell 2.ed
+//     see also joos.lib.JoosConstants, SCROLLBAR_HORIZONTAL
+//                                      SCROLLBAR_VERTICAL
+extern public class Scrollbar extends Component in "java.awt" {
+  public Scrollbar();
+  public Scrollbar(int orientation);
+  public Scrollbar(int orientation, int value, int visible, int minimum, int maximum);
+  // public Scrollbar(int orientation, int value, int visible,
+  //                     int minimum, int maximum);
+  public synchronized void addNotify(); // overrides Component.addNotify()
+  public int getLineIncrement();
+  public int getMaximum();
+  public int getMinimum();
+  public int getOrientation();
+  public int getPageIncrement();
+  public int getValue();
+  public int getVisible();
+  public void setLineIncrement(int l);
+  public void setPageIncrement(int l);
+  public void setValue(int value);
+  public void setValues(int value, int visible, int min, int max);
+}
+
+// java.awt.TextArea - page 267 Nutshell 1.ed - 329 Nutshell 2.ed
+extern public class TextArea extends TextComponent in "java.awt" {
+  public TextArea();
+  public TextArea(String text);
+  public TextArea(int rows, int cols);
+  public TextArea(String text, int rows, int cols);
+  // other constructors possible
+  public synchronized void addNotify(); // Overrides Component.addNotify()
+  public void appendText(String str);
+  public int getColumns();
+  public int getRows();
+  public void InsertText(String str,int pos);
+  public Dimension mimimumSize(); // overrides Component.mimimumSize()
+  public Dimension preferredSize(); // overrides Component.preferredSize()
+  public void replaceText(String str, int start, int end); 
+}
+
+// java.awt.TextComponent - page 268 Nutshell 1.ed - 330 Nutshell 2.ed
+extern public class TextComponent extends Component in "java.awt" {
+  public TextComponent();  // doesn't have a constructor
+  public String getSelectedText();
+  public int getSelectionEnd();
+  public int getSelectionStart();
+  public String getText();
+  public boolean isEditable();
+  public synchronized void removeNotify(); // overrides Component.removeNotify()
+  public void select(int selStart, int selEnd);
+  public void selectAll();
+  public void setEditable(boolean t);
+  public void setText(String t);
+} 
+
+// java.awt.TextField - page 268 Nutshell 1.ed - 331 Nutshell 2.ed
+extern public class TextField extends TextComponent in "java.awt" {
+  public TextField();
+  public TextField(String text);
+  public TextField(int columns);
+  public TextField(String text, int cols);
+  public synchronized void addNotify(); // overrides Component.addNotify()
+  public boolean echoCharIsSet();
+  public int getColumns();
+  public int getEchoChar();
+  public Dimension minimumSize(); // overrides Component.mimimumSize()
+  public Dimension preferredSize(); // overrides Component.preferredSize()
+  public void setColumns(int columns);
+  public void setEchoChar(char c);
+}
+
+// java.awt.Toolkit - page 269 Nutshell 1.ed - 331 Nutshell 2.ed
+extern public abstract class Toolkit extends Object in "java.awt" {
+  public Toolkit();
+  public abstract int checkImage(Image image, int width, int height,
+                                 ImageObserver observer);
+  public abstract Image createImage(ImageProducer producer);
+  // public abstract ColorModel getColorModel();
+  public abstract FontMetrics getFontMetrics(Font font);
+  // public abstract Image getImage(String filename);
+  public abstract Image getImage(URL url);
+  public abstract int getScreenResolution();
+  public abstract Dimension getScreenSize();
+  public abstract boolean prepareImage(Image image, int width,
+                                       int height, ImageObserver observer);
+  public abstract void sync(); 
+}
+
+// java.awt.Window - page 270 Nutshell 1.ed - 333 Nutshell 2.ed
+extern public class Window extends Container in "java.awt" {
+  public Window(Frame parent);
+  public synchronized void AddNotify(); // overrides Container.addNotify()
+  public synchronized void dispose();
+  public Toolkit getToolkit(); // overrides Component.getToolkit()
+  public boolean isShowing();
+  public final String getWarningString();
+  public synchronized void pack();
+  public synchronized void show(); // overrides Component.show()
+  public void toBack();
+  public void toFront();
+}
+// -----------------------------------------------------------------
+// The following classes are defined in the standard java class
+//   libraries,  and are described in the book:
+//   "The Java(tm) Language Specification", by Gosling, Joy and Steele,
+//   published by Addison-Wesley.   On-line copies of the book are
+//   available via <http://java.sun.com/doc/language_specification.html>.
+// -----------------------------------------------------------------
+
+// java.lang.Object - Section 20.1, page 458 
+// see also joos.lib.JoosObject to get the wait method
+extern public class Object in "java.lang" { 
+  public Object();
+  public String toString();
+  public final void notify(); // throws IllegalMonitorStateException
+  public final void notifyAll(); // throws IllegalMonitorStateException
+  public boolean equals(Object obj);
+}
+
+// java.lang.Boolean - Section 20.4, page 469 - page 445 Nutshell 2.ed
+extern public final class Boolean in "java.lang" {
+  public Boolean(boolean value);
+  public Boolean(String s);
+  public String toString();
+  public boolean equals(Object obj);
+  public boolean booleanValue();
+}
+
+// java.lang.Character - page 445 Nutshell 2.ed
+extern public final class Character in "java.lang" {
+  public Character(char value);
+  public boolean isDefined(char ch);
+  public boolean isDigit(char ch);
+  public boolean isISOControl(char ch);
+  public boolean isLetter(char ch);
+  public boolean isLetterOrDigit(char ch);
+  public boolean isLowerCase(char ch);
+  public boolean isSpaceChar(char ch);
+  public boolean isTitleCase(char ch);
+  public boolean isUpperCase(char ch);
+  public boolean isWhitespace(char ch);
+  public char toLowerCase(char ch);
+  public char toTitleCase(char ch);
+  public char toUpperCase(char ch);
+  public char charValue();
+  public boolean equals(Object obj);
+  public String toString();
+}
+
+// java.lang.Integer - Section 20.6, page 487 - page 459 Nutshell 2.ed
+extern public final class Integer in "java.lang" {
+  public Integer(int value);
+  public Integer(String s);
+  public String toString();
+  public boolean equals(Object obj);
+  public int intValue();
+}
+
+// java.lang.Runnable - page 467 Nutshell 2.ed
+//   should be an interface, don't extend it in Joos programs, rather
+//     extend JoosRunnable which is a real class - see joos.lib.JoosRunnable
+extern public abstract class Runnable extends Object in "java.lang" {
+ public Runnable();
+ public abstract void run();
+}
+
+// java.lang.String - Section 20.12, page 531 - page 472 Nutshell 2.ed
+extern public final class String in "java.lang" {
+  public String();
+  public String(String value);
+  public String(StringBuffer buffer);
+  public String vlaueOf(boolean b);
+  public char charAt(int index);
+  public int compareTo(String anotherString);
+  public boolean endsWith(String suffix);
+  public boolean equals(Object obj);
+  public boolean equalsIgnoreCase(String anotherString);
+  public int indexOf(String str, int fromIndex);
+  public int lastIndexOf(String str, int fromIndex);
+  public int length();
+  public boolean regionMatches(boolean ignoreCase, int toffset,
+                       String other, int ooffset, int len);
+  public boolean startsWith(String prefix, int toffset);
+  public String substring(int beginIndex, int endIndex);
+  public String concat(String str);
+  public String toLowerCase();
+  public String toUpperCase();
+  public String toString();
+  public String trim();
+}
+
+// java.lang.StringBuffer - Section 20.13 - page 473 Nutshell 2.ed
+extern public class StringBuffer in "java.lang" {
+  public StringBuffer();
+  public StringBuffer(int length);
+  public StringBuffer(String str);
+  public String toString();
+  public int length();
+  public void setLength(int newLength);
+  public int capacity();
+  public void ensureCapacity(int minimumCapacity);
+  public StringBuffer append(Object obj);
+  public StringBuffer insert(int offset, Object obj);
+  public StringBuffer reverse();
+}
+
+// java.lang.Thread - page 325 in Java in a Nutshell 1.ed - page 476 Nutshell 2.ed
+// should be extends Object implements Runnable
+// see also joos.lib.JoosThread
+extern public class Thread extends Runnable in "java.lang" {
+  public Thread();
+  public Thread(Runnable target);
+  public Thread(String name);
+  public Thread(Runnable target,String name);
+  public void checkAccess(); // throws SecurityException (runtime)
+  public int countStackFrames(); // throws IllegalThreadStateException (runtime)
+  public final String getName();
+  public final int getPriority();
+  public final boolean isAlive();
+  public final boolean isDaemon();
+  public final void resume();
+  public void run();
+  public final void setDaemon(boolean on); // throws IllegalThreadStateException
+  public final void setName(String name);
+  public final void setPriority(int Priority); // throws IllegalArgumentExc
+  public synchronized void start(); // throws IllegalThreadStateException 
+  public final void stop();
+  public final void suspend();
+  public String toString(); // overrides Object.toString()
+}
+
+// java.util.BitSet - Section 21.2 - page 618 - page 445 Nutshell 2.ed
+extern public class BitSet in "java.util" {
+  public BitSet();
+  public BitSet(int nbits);
+  public String toString();
+  public boolean equals(Object obj);
+  public boolean get(int bitIndex);
+  public void set(int bitIndex);
+  public void clear(int bitIndex);
+  public void and(BitSet set);
+  public void or(BitSet set);
+  public void xor(BitSet set);
+  public int size();
+}
+
+// java.util.Date - Section 21.3, page 622 - page 531 Nutshell 2.ed
+extern public class Date in "java.util" {
+  public Date();
+  public Date(int year, int month, int date, 
+                int hours, int minutes, int seconds);
+  public String toString();
+  public boolean equals(Object obj);
+  public int getYear();
+  public void setYear(int year);
+  public int getMonth();
+  public void setMonth(int month);
+  public int getDate();
+  public void setDate(int date);
+  public int getDay();
+  public int getHours();
+  public void setHours(int hours);
+  public int getMinutes();
+  public int setMinutes(int minutes);
+  public int getSeconds();
+  public int setSeconds(int seconds);
+  public boolean before(Date when);
+  public boolean after(Date when);
+  public String toLocaleString();
+  public String toGMTString();
+  public int getTimezoneOffset();
+}
+
+// java.util.Random - Section 21.9, page 646 - page 541 Nutshell 2.ed
+extern public class Random in "java.util" {
+  public Random();
+  public int nextInt();
+}
+
+// java.util.Stack - page 543 Nutshell 2.ed
+extern public class Stack in "java.util" {
+  public Stack();
+  public boolean empty();
+  public synchronized Object peek();
+  public synchronized Object pop();
+  public Object push(Object item);
+  public synchronized int search(Object o);
+}
+
+// java.util.StringTokenizer - Section 21.10, page 651 - 544 Nutshell 2.ed
+extern public class StringTokenizer in "java.util" {
+  public StringTokenizer(String str, String delim, boolean returnTokens);
+  public StringTokenizer(String str, String delim);
+  public StringTokenizer(String str);
+  public boolean hasMoreTokens();
+  public String nextToken(String delim);
+  public boolean hasMoreElements();
+  public Object nextElement();
+  public int countTokens();
+}
+
+// java.util.Vector - Section 21.11, page 654 - page 545 Nutshell 2.ed
+extern public class Vector in "java.util" { // implements Cloneable
+  public Vector(int initialCapacity, int capacityIncrement);
+  public Vector(int initialCapacity);
+  public Vector();
+  public final String toString(); // overrides Object.toString()
+  public final Object elementAt(int index);
+  public final void setElementAt(Object obj, int index);
+  public final Object firstElement();
+  public final Object lastElement();
+  public final void addElement(Object obj);
+  public final void insertElementAt(Object obj, int index);
+  public final boolean removeElement(Object obj);
+  public final void removeElementAt(int index);
+  public final void removeAllElements();
+  public final boolean isEmpty();
+  public final int size();
+  public final void setSize(int newSize);
+  public final int capacity();
+  public final void ensureCapacity(int minCapacity);
+  public final void trimToSize();
+  public final boolean contains(Object elem);
+  public final int indexOf(Object elem);
+  public final int lastIndexOf(Object elem);
+}
+// -----------------------------------------------------------------
+// The following external classes have been written in Java and
+//   compiled to make a directory of class files that can be
+//   accessed from JOOS programs.
+// -----------------------------------------------------------------
+
+extern public class JoosObject in "joos.lib" {
+  public JoosObject(Object myObject);
+  // returns true if interrupted 
+  public final boolean wait(int timeout);
+}
+
+extern public class JoosString in "joos.lib" {
+  public JoosString(String value);
+  public boolean string2Bool();
+  public int string2Int();
+  public String valueOf();
+}
+
+extern public class JoosIO in "joos.lib" {
+  public JoosIO();
+  public void print(String str);
+  public void println(String str);
+  public void flush();
+  public int readInt();
+  public boolean readBoolean();
+  public String readLine(); 
+}
+
+extern public class JoosRandom in "joos.lib" {
+  public JoosRandom();
+  public JoosRandom(int seed);
+  public int nextInt();
+  public synchronized void setSeed(int seed);
+}
+  
+extern public class JoosRandomAccessFile in "joos.lib" {
+  public JoosRandomAccessFile (String name, String mode ) ;
+  public void close();
+  public int length ();
+  public int read ();
+  public boolean readBoolean();
+  public int readInt();
+  public String readLine();
+  public String readUTF ();
+  public int readUnsignedByte();
+  public int readUnsignedShort();
+  public void seek(int pos);
+  public int skipBytes(int n);
+  public void write(int b);
+  public void writeBoolean(boolean v);
+  public void writeByte(int v);
+  public void writeBytes(String s);
+  public void writeChar(int v);
+  public void writeChars(String s);
+  public void writeInt(int v);
+  public void writeShort(int v);
+  public void writeUTF(String str);
+}
+
+
+extern public abstract class JoosRunnable extends Runnable in "joos.lib" {
+  public JoosRunnable();
+  public abstract void run();
+}
+
+extern public class JoosThread in "joos.lib" {
+  public JoosThread(Thread t);
+  // get at constants
+  public int MAX_PRIORITY();
+  public int MIN_PRIORITY();
+  public int NORM_PRIORITY();
+  // get at static methods
+  public int activeCount();
+  public Thread currentThread();
+  public void dumpStack();
+  public boolean sleep(int millis);  // returns true if interrupted
+  public void yield();
+  // make a join that takes an int argument and returns bool
+  public synchronized boolean join(int millis); //  returns true if 
+                                     // interrupted
+}
+  
+extern public class JoosFraction in "joos.lib" {
+  public JoosFraction(int top, int bot);
+  public int top();
+  public int bot();
+  public void setTop(int t);
+  public void setBot(int b);
+}
+
+extern public class JoosConstants in "joos.lib" {
+  public JoosConstants(); 
+
+  // from java.awt.Color
+  public Color black();
+  public Color blue();
+  public Color cyan();
+  public Color darkGray();
+  public Color gray();
+  public Color green();
+  public Color lightGray();
+  public Color magenta();
+  public Color orange();
+  public Color pink();
+  public Color red();
+  public Color white();
+  public Color yellow();
+ 
+  // from java.awt.Event
+  public int ACTION_EVENT();
+  public int GOT_FOCUS();
+  public int LOST_FOCUS(); 
+  public int KEY_ACTION();
+  public int KEY_ACTION_RELEASE(); 
+  public int KEY_PRESS(); 
+  public int KEY_RELEASE(); 
+  public int LIST_SELECT(); 
+  public int LIST_DESELECT();
+  public int LOAD_FILE(); 
+  public int SAVE_FILE(); 
+  public int MOUSE_DOWN();
+  public int MOUSE_UP();
+  public int MOUSE_DRAG();
+  public int MOUSE_MOVE();
+  public int MOUSE_ENTER();
+  public int MOUSE_EXIT();
+  public int SCROLL_ABSOLUTE();
+  public int SCROLL_LINE_UP();
+  public int SCROLL_LINE_DOWN();
+  public int SCROLL_PAGE_UP();
+  public int SCROLL_PAGE_DOWN();
+  public int WINDOW_EXPOSE();
+  public int WINDOW_ICONIFY();
+  public int WINDOW_DEICONIFY();
+  public int WINDOW_DESTROY();
+  public int WINDOW_MOVED();
+
+  public int ALT_MASK();
+  public int CTRL_MASK();
+  public int META_MASK();
+  public int SHIFT_MASK();
+ 
+  public int F1();
+  public int F2();
+  public int F3();
+  public int F4();
+  public int F5();
+  public int F6();
+  public int F7();
+  public int F8();
+  public int F9();
+  public int F10();
+  public int F11();
+  public int F12();
+
+  public int LEFT();
+  public int RIGHT();
+  public int UP();
+  public int DOWN();
+  public int HOME();
+  public int END();
+  public int PGUP();
+  public int PGDN();
+
+  // from java.awt.Font
+  public int BOLD();
+  public int ITALIC();
+  public int PLAIN();
+
+  // from java.awt.Frame
+  public int CROSSHAIR_CURSOR();
+  public int DEFAULT_CURSOR();
+  public int E_RESIZE_CURSOR();
+  public int HAND_CURSOR(); 
+  public int MOVE_CURSOR();
+  public int NE_RESIZE_CURSOR();
+  public int NW_RESIZE_CURSOR();
+  public int N_RESIZE_CURSOR();
+  public int SE_RESIZE_CURSOR(); 
+  public int SW_RESIZE_CURSOR();
+  public int S_RESIZE_CURSOR(); 
+  public int TEXT_CURSOR(); 
+  public int WAIT_CURSOR();
+  public int W_RESIZE_CURSOR();
+
+  // from java.awt.Label
+  public int LABEL_CENTER();
+  public int LABEL_LEFT();
+  public int LABEL_RIGHT();
+
+  // from java.awt.ScrollPane
+  public int SCROLLBRS_ALWAYS();
+  public int SCROLLBRS_AS_NEEDED();
+  public int SCROLLBRS_NEVER();
+
+  // from java.awt.Scrollbar
+  public int SCROLLBAR_HORIZONTAL();
+  public int SCROLLBAR_VERTICAL();
+
+  // from java.awt.FileDiaglog
+  public int LOAD();
+  public int SAVE();
+
+  // from java.awt.FlowLayout
+  public int FLOWLAYOUT_CENTER();
+  public int FLOWLAYOUT_LEFT();
+  public int FLOWLAYOUT_RIGHT();
+  
+  // from java.awt.GridBagConstraints
+  public int GRIDBAGCONSTRAINTS_CENTER();
+  public int EAST();
+  public int NORTH();
+  public int NORTHEAST();
+  public int NORTHWEST();
+  public int SOUTH();
+  public int SOUTHEAST();
+  public int SOUTHWEST();
+  public int WEST();
+  public int GRIDBAGCONSTRAINTS_HORIZONTAL();
+  public int GRIDBAGCONSTRAINTS_VERTICAL();
+  public int BOTH();
+  public int NONE();
+  public int RELATIVE();
+  public int REMAINDER();
+
+  // from java.awt.Image
+  public Object UndefinedProperty();
+
+  // from java.awt.MediaTracker
+  public int ABORTED();
+  public int COMPLETE();
+  public int ERRORED();
+  public int LOADING();
+
+}
+
+
+// to get at several things in java.lang.System
+extern public final class JoosSystem in "joos.lib" {
+  public JoosSystem();
+  public int currentTimeMillis(); // is long in java
+  public void gc();
+  public void runFinalization();
+  public void exit(int value);
+}
+
+// to get at public instanct variables in a Dimension
+extern public class JoosDimension extends Object in "joos.lib" {
+  // Constructor
+  public JoosDimension(Dimension d);
+
+  // get values 
+  public int height();
+  public int width();
+
+  // set values
+  public void setWidth(int width);
+  public void setHeight(int height);
+
+  // get Dimension
+  public Dimension getDimension();
+
+}
+
+// to get at public instance variables in an Event 
+extern public class JoosEvent extends Object in "joos.lib" {
+  // Constructor
+  public JoosEvent(Event e);
+
+  // get values
+  public Object arg();
+  public int clickCount();
+  public Event evt();
+  public int id();
+  public int key();
+  public int modifiers();
+  public Object target();
+  public int when();  // is long in java
+  public int x();
+  public int y();
+
+  // set values
+  public void setArg(Object arg);
+  public void setClickCount(int count);
+  public void setEvent(Event e);
+  public void setId(int id);
+  public void setKey(int key);
+  public void setModifiers(int modifiers);
+  public void setTarget(Object target);
+  public void setWhen(int when);
+  public void setX(int x);
+  public void setY(int y);
+
+  public Event getEvent();
+}
+ 
+// to get at methods add(String name, Component comp);
+//   and             add(Componenet comp, int pos); 
+extern public class JoosContainer extends Object in "joos.lib" {
+  public JoosContainer(Container c);
+  public Component addString(String name, Component comp);
+  public Component addPosition(Component comp, int pos);
+}
+
+// to get at public instance variables in a GridBagConstraints 
+extern public class JoosGridBagConstraints extends Object 
+                      in "joos.lib" {
+
+  // Constructor
+  public JoosGridBagConstraints(GridBagConstraints c);
+
+  // getting the values from fields
+  public int anchor();
+  public int fill();
+  public int gridheight();
+  public int gridwidth();
+  public int gridx();
+  public int gridy();
+  public Insets insets();
+  public int ipadx();
+  public int ipady();
+
+  // setting the fields
+  public void setAnchor(int i);
+  public void setFill(int i);
+  public void setGridHeight(int i);
+  public void setGridWidth(int i);
+  public void setGridX(int i);
+  public void setGridY(int i);
+  public void setInsets(Insets i);
+  public void setIpadX(int i);
+  public void setIpadY(int i);
+  public void setWeightX(JoosFraction f);  
+  public void setWeightY(JoosFraction f);
+
+  // getting back the GridBagConstraints
+  public GridBagConstraints getConstraints();
+}
+
+extern public class JoosMediaTracker extends Object in "joos.lib" {
+  public JoosMediaTracker (MediaTracker myTracker);
+  public boolean waitForAll();
+  public boolean waitForID(int id);
+  public MediaTracker getMediaTracker();
+}
+
+// to get at public instance variables in Rectangle
+extern public class JoosRectangle extends Rectangle in "joos.lib" {
+  // Constructor
+  public JoosRectangle(int x, int y, int w, int h);
+  public int x();
+  public int y();
+  public int width();
+  public int height();
+  public void setX(int x);
+  public void setY(int y);
+  public void setWidth(int w);
+  public void setHeight(int h);
+}
+
+
+extern public class JoosURL extends Object in "joos.lib" {
+  public JoosURL(URL context, String spec);
+  public Object getContent();
+  public URL getURL();
+  public boolean openConnection();
+  public boolean openOutputStream();
+  public boolean println(String s);
+  public boolean print(String s);
+  public boolean closeOutputStream();
+  public boolean openInputStream();
+  public String readLine();
+  public boolean closeInputStream(); 
+  public String getErrorLog();
+} 
+
+extern public class WigApplet extends Applet in "joos.lib" {
+  public WigApplet();
+  public void addResult(String name, String value);
+  public boolean openURL();
+  public boolean returnResults();
+  public void getResponse();
+}
+// see also joos.lib.JoosURL
+extern public final class URL extends Object in "java.net" {
+  public URL(String protocol, String host, int port, String file); // throws MalformedURLException
+  public URL(String protocol, String host, String file); // throws MalformedURLException
+  public URL(String spec); // throws MalformedURLException
+  public URL(URL context,String spec); // throws MalformedURLException
+  public boolean equals(Object obj); // overrides Object.equals();
+  public String getFile();
+  public String getHost();
+  public int getPort();
+  public String getProtocol();
+  public String getRef();
+  public boolean sameFile(URL other);
+  public String toExternalForm();
+  public String toString(); // overrides Object.toString();
+} 

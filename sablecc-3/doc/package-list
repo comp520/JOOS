@@ -1,0 +1,13 @@
+joosc
+joosc.abstracter
+joosc.analysis
+joosc.code
+joosc.code.bytecode
+joosc.fixer
+joosc.lexer
+joosc.node
+joosc.parser
+joosc.resource
+joosc.symbol
+joosc.type
+joosc.weeder

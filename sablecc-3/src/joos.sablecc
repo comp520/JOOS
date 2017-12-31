@@ -1,0 +1,635 @@
+/*
+ * JOOSJ is Copyright (C) 2000 Othman Alaoui
+ *
+ * Reproduction of all or part of this software is permitted for
+ * educational or research use on condition that this copyright notice is
+ * included in any copy. This software comes with no warranty of any
+ * kind. In no event will the author be liable for any damages resulting from
+ * use of this software.
+ *
+ * email: oalaou@po-box.mcgill.ca
+ */
+
+
+/*
+ * August 2003
+ *
+ * This the the updated grammar for JOOSJ which works with the
+ * new version of SableCC (SableCC3.0)
+ *
+ * Update by Ahmer Ahmedani & Feng Qian
+ * email: ahmer.ahmedani@mail.mcgill.ca & fqian@cs.mcgill.ca
+ */
+
+
+/*
+ * Glossary:
+ *  us = underscore
+ *  stm = statement
+ *  exp = expression
+ *
+ * History (most recent first):
+ *  14 Sep 2004 - Modify for latest SableCC 3, and re-indent
+ *  19 Aug 2003 - simplifying AST grammar, remove A+ code (comments,
+ *                for loops)
+ *  14 May 2000 - hidden alternatives in type production for type-checking
+ *   7 May 2000 - hidden alternatives to streamline field and decl stm
+ *   4 May 2000 - hidden alternatives to integrate simplestm into stm
+ *   2 Apr 2000 - receiver also modified (used postfix_exp)
+ *                regave a name to nonchar cast exp
+ *                added hidden alternatives to exp production
+ *   1 Apr 2000 - finalized hidden alternatives setup for stm_no_short_if
+ *                added hidden alternative for constructor production
+ *   6 Mar 2000 - hidden alternative integration started
+ *                - identifier_list, formal_list, argument_list: success
+ *   5 Mar 2000 - tested successfully against all benchmarks
+ *                A+ C-style comments added; A+ inc and for loops added
+ *   4 Mar 2000 - tested successfully against all Extern .joos files
+ *                tested successfully against all A- compliant benchmarks
+ *                grammar reviewed; fixed stringconst
+ *                added package; grammar compiles (no conflicts); bugfixes
+ *   3 Mar 2000 - grammar section code complete
+ *   2 Mar 2000 - supercons treatment
+ *  27 Feb 2000 - changed comma-separated list definition
+ *  26 Feb 2000 - fixed a bug in charconst token definition
+ *  23 Jan 2000 - grammar section started
+ *  22 Jan 2000 - created; lexer section code complete
+ */
+
+Package joosc;
+
+/*******************************************************************
+ * Helpers                                                         *
+ *******************************************************************/
+Helpers
+
+  all = [0..0xffff];
+  letter =                [['a'..'z'] + ['A'..'Z']];
+  digit =                 ['0'..'9'];
+  letter_or_digit =       letter | digit;
+  letter_or_digit_or_us = letter_or_digit | '_';
+  letter_or_us =          letter | '_';
+  nonzero_digit =         ['1'..'9'];
+  octal_digit =           ['0'..'7'];
+  lf =                    10;
+  sp =                    32;
+  ht =                    9;
+  line_terminator =       lf;
+  octal_escape =          '\' octal_digit octal_digit octal_digit;
+  esc_sequence =          '\b' | '\t' | '\n' | '\f' | '\r' |
+	                  '\"' | '\' ''' | '\\' | octal_escape;
+
+/*******************************************************************
+ * Tokens                                                          *
+ *******************************************************************/
+Tokens
+
+  /*********************
+   * Keywords          *
+   *********************/
+  abstract =     'abstract';
+  boolean =      'boolean';
+  break =        'break';
+  byte =         'byte';
+  case =         'case';
+  catch =        'catch';
+  char =         'char';
+  class =        'class';
+  const =        'const';
+  continue =     'continue';
+  default =      'default';
+  do =           'do';
+  double =       'double';
+  else =         'else';
+  extends =      'extends';
+  extern =       'extern';
+  final =        'final';
+  finally =      'finally';
+  float =        'float';
+  for =          'for';
+  goto =         'goto';
+  if =           'if';
+  implements =   'implements';
+  import =       'import';
+  in =           'in';
+  instanceof =   'instanceof';
+  int =          'int';
+  interface =    'interface';
+  long =         'long';
+  main =         'main';
+  native =       'native';
+  new =          'new';
+  package =      'package';
+  private =      'private';
+  protected =    'protected';
+  public =       'public';
+  return =       'return';
+  short =        'short';
+  static =       'static';
+  super =        'super';
+  switch =       'switch';
+  synchronized = 'synchronized';
+  this =         'this';
+  throw =        'throw';
+  throws =       'throws';
+  transient =    'transient';
+  try =          'try';
+  void =         'void';
+  volatile =     'volatile';
+  while =        'while';
+
+  /*********************
+   * Operators         *
+   *********************/
+  assign =    '=';
+  gt =        '>';
+  lt =        '<';
+  not =       '!';
+  eq =        '==';
+  leq =       '<=';
+  geq =       '>=';
+  neq =       '!=';
+  and =       '&&';
+  or =        '||';
+  plus =      '+';
+  minus =     '-';
+  mult =      '*';
+  div =       '/';
+  mod =       '%';
+  l_brace =   '{';
+  r_brace =   '}';
+  semicolon = ';';
+  l_par =     '(';
+  r_par =     ')';
+  l_bracket = '[';
+  r_bracket = ']';
+  comma =     ',';
+  dot =       '.';
+  inc =       '++';
+
+  /*********************
+   * Literals          *
+   *********************/
+  null =        'null';
+  true =        'true';
+  false =       'false';
+  charconst =   ''' ([[[all - line_terminator] - '''] - '\'] |
+	        esc_sequence) ''';
+  intconst =    '0' | (nonzero_digit digit*);
+  stringconst = '"' [all - '"']* '"';
+
+  identifier =  letter_or_us letter_or_digit_or_us*;
+
+  importpath =  'import '
+	        (letter_or_us letter_or_digit_or_us* '.')*
+	        ('*' | letter_or_us letter_or_digit_or_us*)
+	        ';';
+
+  /*********************
+   * Blanks            *
+   *********************/
+  blanks =      (sp|ht|line_terminator)+;
+  eol_comment = '//' [all - line_terminator]* line_terminator;
+
+/*******************************************************************
+ * Ignored Tokens                                                  *
+ *******************************************************************/
+Ignored Tokens
+
+  blanks,
+  eol_comment;
+
+/*******************************************************************
+ * Productions                                                     *
+ *******************************************************************/
+Productions
+
+classfile =
+  {default} importpath* [p_class]:P.class
+            {-> New classfile.default(p_class)} |
+  {extern}  extern_class+;
+
+
+class =
+  public classmods? [t_class]:T.class identifier extension? l_brace
+  field* constructor+ method* r_brace
+  {-> New class(classmods, identifier, extension, [field],
+                [constructor], [method])};
+
+classmods =
+  {final}    final |
+  {abstract} abstract;
+
+extern_class =
+  extern public classmods? [t_class]:T.class identifier extension?
+  in stringconst l_brace extern_constructor+ extern_method* r_brace
+  {-> New extern_class(classmods, identifier, extension, stringconst,
+                       [extern_constructor], [extern_method])};
+
+extension =
+  extends identifier
+  {-> New extension(identifier)};
+
+type =
+  {reference} identifier |
+  {char}      char |
+  {boolean}   boolean |
+  {int}       int;
+
+field =
+  protected type identifier_list semicolon
+  {-> New field.first(type, [identifier_list.identifier])};
+
+identifier_list {-> identifier*} =
+  identifier identifier_list_tail*
+  {-> [identifier, identifier_list_tail.identifier]};
+
+identifier_list_tail {-> identifier} =
+  comma identifier
+  {-> identifier};
+
+constructor =
+  public identifier l_par formal_list? r_par l_brace super
+  [super_l_par]:l_par argument_list? [super_r_par]:r_par semicolon
+  stm* r_brace
+  {-> New constructor(identifier, [formal_list.formal],
+                      [New stm.supercons([argument_list.exp]), stm])};
+
+extern_constructor =
+  public identifier l_par formal_list? r_par semicolon
+  {-> New extern_constructor(identifier, [formal_list.formal])};
+
+formal_list {-> formal*} =
+  formal formal_list_tail*
+  {-> [formal, formal_list_tail.formal]};
+
+formal_list_tail {-> formal } =
+  comma formal
+  {-> formal};
+
+formal =
+  type identifier;
+
+method =
+  {mod}      public methodmods returntype identifier l_par
+             formal_list? r_par l_brace stm* r_brace
+             {-> New method.mod(methodmods, returntype, identifier,
+                                [formal_list.formal], [stm])} |
+  {nonmod}   public returntype identifier l_par formal_list? r_par
+             l_brace stm* r_brace
+             {-> New method.nonmod(returntype, identifier,
+                                   [formal_list.formal], [stm])} |
+  {abstract} public abstract returntype identifier l_par formal_list?
+             r_par semicolon
+             {-> New method.abstract(returntype, identifier,
+                                     [formal_list.formal])} |
+  {main}     public static void main l_par mainargv r_par l_brace
+             stm* r_brace
+             {-> New method.main(mainargv, [stm])};
+
+methodmods =
+  {final}        final |
+  {synchronized} synchronized;
+
+mainargv =
+  {first}  [type]:identifier [name]:identifier l_bracket r_bracket
+           {-> New mainargv(type, name)} |
+  {second} [type]:identifier l_bracket r_bracket [name]:identifier
+           {-> New mainargv(type, name)};
+
+extern_method =
+  {mod}    public extern_methodmods returntype identifier l_par
+           formal_list? r_par semicolon
+           {-> New extern_method.mod(extern_methodmods, returntype,
+                                     identifier,
+                                     [formal_list.formal])} |
+  {nonmod} public returntype identifier l_par formal_list? r_par
+           semicolon
+           {-> New extern_method.nonmod(returntype, identifier,
+                                        [formal_list.formal])};
+
+extern_methodmods =
+  {final}        final |
+  {abstract}     abstract |
+  {synchronized} synchronized;
+
+returntype =
+  {void}    void
+            {-> New returntype.void()} |
+  {nonvoid} type;
+
+stm =
+  {simple} simplestm
+           {-> simplestm.stm} |
+  {decl}   type identifier_list semicolon
+           {-> New stm.decl_first(type,
+                                  [identifier_list.identifier]) } |
+  {if}     if l_par exp r_par stm
+           {-> New stm.if(exp, stm)} |
+  {ifelse} if l_par exp r_par stm_no_short_if else stm
+	   {-> New stm.ifelse(exp, stm_no_short_if.stm, stm) } |
+  {while}  while l_par exp r_par stm
+           {-> New stm.while(exp, stm)};
+
+simplestm {-> stm} =
+  {skip}   semicolon
+           {-> New stm.skip()} |
+  {block}  l_brace stm* r_brace
+           {-> New stm.block([stm])} |
+  {exp}    stm_exp semicolon
+           {-> New stm.exp(stm_exp.exp)} |
+  {return} return exp? semicolon
+           {-> New stm.return(exp)} ;
+
+stm_no_short_if {-> stm} =
+  {simple}     simplestm
+               {-> simplestm.stm} |
+  {tmp_ifelse} if l_par exp r_par
+               [then_stm_no_short_if]:stm_no_short_if else
+               [else_stm_no_short_if]:stm_no_short_if
+               {-> New stm.ifelse(exp, then_stm_no_short_if.stm,
+                                  else_stm_no_short_if.stm)} |
+  {tmp_while}  while l_par exp r_par stm_no_short_if
+               {-> New stm.while(exp, stm_no_short_if.stm)};
+
+stm_exp {-> exp} =
+  {assign} assignment
+           {-> assignment.exp} |
+  {call}   methodinvocation
+           {-> methodinvocation.exp} |
+  {new}    classinstancecreation
+           {-> classinstancecreation.exp};
+
+assignment {-> exp} =
+  identifier assign exp
+  {-> New exp.assign(identifier, exp)};
+
+// transformation: collapse precedence cascade below into one production
+exp =
+  // 'default' nodes not present in "fixed" AST
+  {default} or_exp
+            {-> or_exp.exp } |
+  {assign}  assignment
+            {-> assignment.exp};
+
+// all *_exp productions alternatives below deleted from AST
+// (replaced by hidden exp alternatives)
+
+or_exp {-> exp } =
+  {default} and_exp
+            {-> and_exp.exp } |
+  {or}      [left]:or_exp or [right]:and_exp
+            {-> New exp.or(left.exp, right.exp) };
+
+and_exp {-> exp } =
+  {default} eq_exp
+            {-> eq_exp.exp } |
+  {and}     [left]:and_exp and [right]:eq_exp
+            {-> New exp.and(left.exp, right.exp) };
+
+eq_exp {-> exp } =
+  {default} rel_exp
+            {-> rel_exp.exp } |
+  {eq}      [left]:eq_exp eq [right]:rel_exp
+            {-> New exp.eq(left.exp, right.exp) } |
+  {neq}     [left]:eq_exp neq [right]:rel_exp
+            {-> New exp.neq(left.exp, right.exp)};
+
+rel_exp {-> exp } =
+  {default}    add_exp
+               {-> add_exp.exp } |
+  {lt}         [left]:rel_exp lt [right]:add_exp
+               {-> New exp.lt(left.exp, right.exp) } |
+  {gt}         [left]:rel_exp gt [right]:add_exp
+               {-> New exp.gt(left.exp, right.exp) } |
+  {leq}        [left]:rel_exp leq [right]:add_exp
+               {-> New exp.leq(left.exp, right.exp) } |
+  {geq}        [left]:rel_exp geq [right]:add_exp
+               {-> New exp.geq(left.exp, right.exp) } |
+  {instanceof} rel_exp instanceof identifier
+               {-> New exp.instanceof(rel_exp.exp, identifier)};
+
+add_exp {-> exp } =
+  {default} mult_exp
+            {-> mult_exp.exp } |
+  {plus}    [left]:add_exp plus [right]:mult_exp
+            {-> New exp.plus(left.exp, right.exp) } |
+  {minus}   [left]:add_exp minus [right]:mult_exp
+            {-> New exp.minus(left.exp, right.exp)};
+
+mult_exp {-> exp } =
+  {default} unary_exp
+              {-> unary_exp.exp } |
+  {mult}      [left]:mult_exp mult [right]:unary_exp
+              {-> New exp.mult(left.exp, right.exp) } |
+  {div}       [left]:mult_exp div [right]:unary_exp
+              {-> New exp.div(left.exp, right.exp) } |
+  {mod}       [left]:mult_exp mod [right]:unary_exp
+              {-> New exp.mod(left.exp, right.exp)};
+
+unary_exp {-> exp } =
+  {default} unary_exp_not_minus
+            {-> unary_exp_not_minus.exp } |
+  {minus}   minus unary_exp
+            {-> New exp.uminus(unary_exp.exp)};
+
+unary_exp_not_minus {-> exp } =
+  {default} postfix_exp
+            {-> postfix_exp.exp } |
+  {not}     not unary_exp
+            {-> New exp.not(unary_exp.exp) } |
+  {cast}    cast_exp
+            {-> cast_exp.exp };
+
+cast_exp {-> exp } =
+  {nonchar} l_par exp r_par unary_exp_not_minus
+            {-> New exp.tmpcast(exp, unary_exp_not_minus.exp) } |
+  {char}    l_par char r_par unary_exp
+            {-> New exp.casttochar(unary_exp.exp)};
+
+postfix_exp {-> exp } =
+  {id}      identifier
+            {-> New exp.id(identifier) } |
+  {primary} primary_exp
+            {-> primary_exp.exp};
+
+primary_exp {-> exp } =
+  {literal} literal
+            {-> literal.exp } |
+  {this}    this
+            {-> New exp.this() } |
+  {paren}   l_par exp r_par
+            {-> exp.exp } |
+  {new}     classinstancecreation
+            {-> classinstancecreation.exp } |
+  {call}    methodinvocation
+            {-> methodinvocation.exp };
+
+classinstancecreation {-> exp}=
+  new identifier l_par argument_list? r_par
+  {-> New exp.new(identifier, [argument_list.exp])};
+
+methodinvocation {-> exp}=
+  receiver dot identifier l_par argument_list? r_par
+  {-> New exp.call(receiver, identifier, [argument_list.exp])};
+
+receiver =
+  {tmpobject} postfix_exp
+              {-> New receiver.object(postfix_exp.exp) } |
+  // transformation necessary as a result of precedence cascade collapse
+  {super}     super
+              {-> New receiver.super()};
+
+argument_list{-> exp*} =
+  exp argument_list_tail*
+  {-> [exp, argument_list_tail.exp]};
+
+argument_list_tail {-> exp } =
+  comma exp
+  {-> exp };
+
+// literal production alternatives deleted from AST
+// (replaced by hidden exp alternatives)
+literal {-> exp } =
+  {int}    intconst
+           {-> New exp.intconst(intconst) } |
+  {true}   true
+           {-> New exp.true() } |
+  {false}  false
+           {-> New exp.false() } |
+  {char}   charconst
+           {-> New exp.charconst(charconst) } |
+  {string} stringconst
+           {-> New exp.stringconst(stringconst) } |
+  {null}   null
+           {-> New exp.null()};
+
+
+/*******************************************************************
+ * Abstract Syntax  Tree                                            *
+ *******************************************************************/
+Abstract Syntax Tree
+
+classfile =
+  {default} [p_class]:P.class |
+  {extern}  [classes]:extern_class*;
+
+class =
+  classmods? identifier extension? [fields]:field*
+  [constructors]:constructor* [methods]:method* ;
+
+classmods =
+  {final}    final |
+  {abstract} abstract;
+
+extern_class =
+  classmods? identifier extension? stringconst
+  [constructors]:extern_constructor* [methods]:extern_method* ;
+
+extension =
+  identifier;
+
+type =
+  {reference} identifier |
+  {char}      char |
+  {boolean}   boolean |
+  {int}       int |
+  // hidden alternatives: generated type classes used for type-checking
+  {polynull}  |
+  {void}      ;
+
+field =
+  {first} type [identifiers]:identifier* |
+  [fields]:onefield*;
+
+// used by hidden alternative
+onefield =
+  type identifier ;
+
+constructor =
+  identifier [formals]:formal* [stmts]:stm* ;
+
+extern_constructor =
+  identifier [formals]:formal* ;
+
+formal =
+  type identifier;
+
+method =
+  {mod}      methodmods returntype identifier [formals]:formal* [stmts]:stm* |
+  {nonmod}   returntype identifier [formals]:formal* [stmts]:stm* |
+  {abstract} returntype identifier [formals]:formal* |
+  {main}     mainargv [stmts]:stm* ;
+
+methodmods =
+  {final}        final |
+  {synchronized} synchronized;
+
+mainargv =
+  [type]:identifier [name]:identifier;
+
+extern_method =
+  {mod}    extern_methodmods returntype identifier [formals]:formal* |
+  {nonmod} returntype identifier [formals]:formal* ;
+
+extern_methodmods =
+  {final}        final |
+  {abstract}     abstract |
+  {synchronized} synchronized;
+
+returntype =
+  {void}    |
+  {nonvoid} type;
+
+stm =
+  {skip}       |
+  {block}      [stmts]:stm* |
+  {exp}        exp |
+  {return}     exp? |
+  {decl_first} type [identifiers]:identifier*|
+  {decl}       [locals]:onelocal* |
+  {supercons}  [args]:exp* |
+  {if}         exp stm |
+  {ifelse}     exp [then_stm]:stm [else_stm]:stm |
+  {while}      exp stm;
+
+// used by hidden decl alternative of stm production
+onelocal =
+  type identifier ;
+
+exp =
+  {assign}      identifier exp|
+  {or}          [left]:exp [right]:exp |
+  {and}         [left]:exp [right]:exp |
+  {eq}          [left]:exp [right]:exp |
+  {neq}         [left]:exp [right]:exp |
+  {lt}          [left]:exp [right]:exp |
+  {gt}          [left]:exp [right]:exp |
+  {leq}         [left]:exp [right]:exp |
+  {geq}         [left]:exp [right]:exp |
+  {instanceof}  exp identifier |
+  {plus}        [left]:exp [right]:exp |
+  {minus}       [left]:exp [right]:exp |
+  {mult}        [left]:exp [right]:exp |
+  {div}         [left]:exp [right]:exp |
+  {mod}         [left]:exp [right]:exp |
+  {uminus}      exp |
+  {not}         exp |
+  {tmpcast}     [caster]:exp [castee]:exp |
+  {cast}        identifier exp |
+  {casttochar}  exp |
+  {id}          identifier |
+  {this}        |
+  {new}         identifier [args]:exp* |
+  {call}        receiver identifier [args]:exp*|
+  {intconst}    intconst |
+  {true}        |
+  {false}       |
+  {charconst}   charconst |
+  {stringconst} stringconst |
+  {null}        ;
+
+receiver =
+  {object} exp |
+  {super}  ;
+

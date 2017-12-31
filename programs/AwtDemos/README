@@ -1,0 +1,4 @@
+This directory contains examples of using JOOS to build a user interface.
+There are three examples,  each example consisting of several .java
+files.   Please see the Makefile to see how the files are grouped.
+

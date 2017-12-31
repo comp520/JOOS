@@ -1,0 +1,8 @@
+These programs show some basic operations for writing graphics and text in
+an applet.   Each program has the java program (.java) and an example
+.html page to show how to call the applet.   
+
+Note that JOOS does not support constants,  and so the constants from
+java libraries must be used via the JoosConstants class.   See DemoFont.java
+for an example.   The exact names of all Joos constants can be found
+in $JOOSDIR/Lib/joos/lib/JoosConstants.java.

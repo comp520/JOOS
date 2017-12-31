@@ -1,0 +1,492 @@
+/*
+ * JOOSJ is Copyright (C) 2000 Othman Alaoui
+ *
+ * Reproduction of all or part of this software is permitted for
+ * educational or research use on condition that this copyright notice is
+ * included in any copy. This software comes with no warranty of any
+ * kind. In no event will the author be liable for any damages resulting from
+ * use of this software.
+ *
+ * email: oalaou@po-box.mcgill.ca
+ */
+
+
+/*
+ * Glossary:
+ *  us = underscore
+ *  stm = statement
+ *  exp = expression
+ *
+ * History (most recent first):
+ *  14 May 2000 - hidden alternatives in type production for type-checking
+ *   7 May 2000 - hidden alternatives to streamline field and decl stm
+ *   4 May 2000 - hidden alternatives to integrate simplestm into stm
+ *   2 Apr 2000 - receiver also modified (used postfix_exp)
+ *                regave a name to nonchar cast exp
+ *                added hidden alternatives to exp production
+ *   1 Apr 2000 - finalized hidden alternatives setup for stm_no_short_if
+ *                added hidden alternative for constructor production
+ *   6 Mar 2000 - hidden alternative integration started
+ *                - identifier_list, formal_list, argument_list: success
+ *   5 Mar 2000 - tested successfully against all benchmarks
+ *                A+ C-style comments added; A+ inc and for loops added
+ *   4 Mar 2000 - tested successfully against all Extern .joos files
+ *                tested successfully against all A- compliant benchmarks
+ *                grammar reviewed; fixed stringconst
+ *                added package; grammar compiles (no conflicts); bugfixes
+ *   3 Mar 2000 - grammar section code complete
+ *   2 Mar 2000 - supercons treatment
+ *  27 Feb 2000 - changed comma-separated list definition
+ *  26 Feb 2000 - fixed a bug in charconst token definition
+ *  23 Jan 2000 - grammar section started
+ *  22 Jan 2000 - created; lexer section code complete
+ */
+
+Package joosc;
+
+/*******************************************************************
+ * Helpers                                                         *
+ *******************************************************************/
+Helpers
+
+	all =                   [0..0xffff];
+	letter =                [['a'..'z'] + ['A'..'Z']];
+	digit =                 ['0'..'9'];
+	letter_or_digit =       letter | digit;
+	letter_or_digit_or_us = letter_or_digit | '_';
+	letter_or_us =           letter | '_';
+	nonzero_digit =         ['1'..'9'];
+	octal_digit =           ['0'..'7'];
+	lf =                    10;
+	sp =                    32;
+	ht =                    9;
+	line_terminator =       lf;
+	octal_escape =          '\' octal_digit octal_digit octal_digit;
+	esc_sequence =          '\b' | '\t' | '\n' | '\f' | '\r' | 
+	                        '\"' | '\' ''' | '\\' | octal_escape;
+	/*@A+begin*/
+	star =                  '*';
+	slash =                 '/';
+	not_star =              [all - star];
+	not_star_slash =        [not_star - slash];
+	/*@A+end*/
+
+/*******************************************************************
+ * Tokens                                                          *
+ *******************************************************************/
+Tokens
+
+	blanks =                (sp|ht|line_terminator)+;
+	eol_comment =           '//' [all - line_terminator]* line_terminator;
+	/*@A+begin*/
+	// alternatively, could have used lexer states
+	ext_comment =           '/*' not_star* star+ (not_star_slash not_star* star+)* '/';
+	/*A+end*/
+	
+	/*********************
+	 Keywords
+	**********************/
+	abstract =              'abstract';
+	boolean =               'boolean';
+	break =                 'break';
+	byte =                  'byte';
+	case =                  'case';
+	catch =                 'catch';
+	char =                  'char';
+	class =                 'class';
+	const =                 'const';
+	continue =              'continue';
+	default =               'default';
+	do =                    'do';
+	double =                'double';
+	else =                  'else';
+	extends =               'extends';
+	extern =                'extern';
+	final =                 'final';
+	finally =               'finally';
+	float =                 'float';
+	for =                   'for';
+	goto =                  'goto';
+	if =                    'if';
+	implements =            'implements';
+	import =                'import';
+	in =                    'in';
+	instanceof =            'instanceof';
+	int =                   'int';
+	interface =             'interface';
+	long =                  'long';
+	main =                  'main';
+	native =                'native';
+	new =                   'new';
+	package =               'package';
+	private =               'private';
+	protected =             'protected';
+	public =                'public';
+	return =                'return';
+	short =                 'short';
+	static =                'static';
+	super =                 'super';
+	switch =                'switch';
+	synchronized =          'synchronized';
+	this =                  'this';
+	throw =                 'throw';
+	throws =                'throws';
+	transient =             'transient';
+	try =                   'try';
+	void =                  'void';
+	volatile =              'volatile';
+	while =                 'while';
+	
+	/*********************
+	 Operators
+	**********************/
+	assign =                '=';
+	gt =                    '>';
+	lt =                    '<';
+	not =                   '!';
+	eq =                    '==';
+	leq =                   '<=';
+	geq =                   '>=';
+	neq =                   '!=';
+	and =                   '&&';
+	or =                    '||';
+	plus =                  '+';
+	minus =                 '-';
+	mult =                  '*';
+	div =                   '/';
+	mod =                   '%';
+	l_brace =               '{';
+	r_brace =               '}';
+	semicolon =             ';';
+	l_par =                 '(';
+	r_par =                 ')';
+	l_bracket =             '[';
+	r_bracket =             ']';
+	comma =                 ',';
+	dot =                   '.';
+	inc =                   '++';
+	
+	/*********************
+	 Literals
+	**********************/
+	null =                  'null';
+	true =                  'true';
+	false =                 'false';
+	charconst =             ''' ([[[all - line_terminator] - '''] - '\'] | 
+	                             esc_sequence) ''';
+	intconst =              '0' | (nonzero_digit digit*);
+	stringconst =           '"' [all - '"']* '"';
+	
+	identifier =            letter_or_us letter_or_digit_or_us*;
+	
+	importpath =            'import ' 
+	                        (letter_or_us letter_or_digit_or_us* '.')* 
+	                        ('*' | letter_or_us letter_or_digit_or_us*)
+	                        ';';
+
+/*******************************************************************
+ * Ignored Tokens                                                  *
+ *******************************************************************/
+Ignored Tokens
+
+	blanks,
+	eol_comment/*A+begin*/,
+	ext_comment/*A+end*/;
+	
+/*******************************************************************
+ * Productions                                                     *
+ *******************************************************************/
+Productions
+
+classfile = 
+	{default}	importpath* [p_class]:P.class | 
+	{extern}		extern_class+;
+
+class = 
+	public classmods? [t_class]:T.class identifier extension? 
+   l_brace field* constructor+ method* r_brace;
+
+classmods =
+	{final}		final | 
+	{abstract}	abstract;
+
+extern_class = 
+	extern public classmods? [t_class]:T.class identifier extension? 
+   in stringconst l_brace extern_constructor+ extern_method* r_brace;
+
+extension = 
+	extends identifier;
+
+type = 
+	{reference}		identifier | 
+	{char}			char | 
+	{boolean}		boolean |
+	{int}				int |
+	// hidden alternatives: generated type classes used for type-checking
+	({polynull}    ) |
+	({void}        void);
+
+field = 
+// AST transformation replaces tmp by (unnamed) hidden alternative
+	(     onefield+) |
+	{tmp} protected type identifier_list semicolon;
+
+// used by (unnamed) hidden alternative of field production
+onefield =
+	protected type identifier semicolon;
+	
+identifier_list = 
+// AST transformation replaces tmp by (unnamed) hidden alternative
+	(      identifier+) |
+	{tmp}  identifier identifier_list_tail*;
+
+identifier_list_tail =
+	comma identifier;
+
+constructor = 
+// AST transformation: replaces tmp by (unnamed) hidden alternative
+// to integrate supercons stm to stm sequence
+	(      public identifier l_par formal_list? r_par
+	       l_brace stm+ r_brace) |
+	{tmp}  public identifier l_par formal_list? r_par 
+	       l_brace super [super_l_par]:l_par argument_list? 
+	       [super_r_par]:r_par semicolon stm* r_brace;
+
+extern_constructor = 
+	public identifier l_par formal_list? r_par semicolon;
+
+formal_list = 
+// AST transformation replaces tmp by (unnamed) hidden alternative
+	(       formal+) |
+	{tmp}   formal formal_list_tail*;
+
+formal_list_tail =
+	comma formal;
+
+formal = 
+	type identifier;
+
+method = 
+	{mod} 		public methodmods returntype identifier l_par formal_list? 
+	            r_par l_brace stm* r_brace | 
+	{nonmod}		public returntype identifier l_par formal_list? 
+	            r_par l_brace stm* r_brace | 
+	{abstract}	public abstract returntype identifier 
+	            l_par formal_list? r_par semicolon | 
+   {main}		public static void main l_par mainargv 
+               r_par l_brace stm* r_brace;
+
+methodmods = 
+	{final}				final | 
+	{synchronized}		synchronized;
+
+mainargv = 
+	{first}     [type]:identifier [name]:identifier l_bracket r_bracket | 
+	{second}    [type]:identifier l_bracket r_bracket [name]:identifier;
+
+extern_method = 
+	{mod}			public extern_methodmods returntype identifier 
+	            l_par formal_list? r_par semicolon | 
+	{nonmod}		public returntype identifier 
+	            l_par formal_list? r_par semicolon;
+
+extern_methodmods = 
+	{final}				final | 
+	{abstract}			abstract | 
+	{synchronized}		synchronized;
+
+returntype = 
+	{void}		void | 
+	{nonvoid}	type;
+
+stm = 
+	{simple} simplestm | 
+	// AST transformations integrate simplestm alternatives here, into stm
+	({skip}      semicolon) | 
+	({block}		 l_brace stm* r_brace) | 
+	({exp}       stm_exp semicolon) | 
+	({return}    return exp? semicolon) |
+	// AST transformation replaces tmpdecl by decl
+	({decl}      onelocal+) |
+	{tmpdecl}    type identifier_list semicolon |
+	// hidden alternative: to be used in constructor transformation
+	({supercons} super l_par argument_list? r_par semicolon) |
+	{if}         if l_par exp r_par stm | 
+	{tmp_ifelse} if l_par exp r_par stm_no_short_if else stm | 
+	// AST transformation: replaces noshortif stms by regular stms
+	({ifelse}    if l_par exp r_par [then_stm]:stm else [else_stm]:stm) | 
+	/*@A+begin*/
+	{for}        for l_par [initializer]:stm_exp [semicolon1]:semicolon exp 
+	             [semicolon2]:semicolon [updater]:stm_exp r_par stm |
+	/*@A+end*/
+	{while}      while l_par exp r_par stm;
+
+// used by hidden decl alternative of stm production
+onelocal =
+   type identifier semicolon;
+
+// all simplestm nodes deleted from AST (using by hidden stm alternatives)
+simplestm = 
+	{skip}		semicolon | 
+	{block}		l_brace stm* r_brace | 
+	{exp}			stm_exp semicolon | 
+	{return}		return exp? semicolon;
+
+// all stm_no_short_if nodes progressively killed from AST 
+// (replaced by stm equivalents)
+stm_no_short_if = 
+	{simple}	    simplestm | 
+	{tmp_ifelse} if l_par exp r_par [then_stm_no_short_if]:stm_no_short_if 
+	             else [else_stm_no_short_if]:stm_no_short_if | 
+	// intermediate AST transformation for replacement of noshortif stms
+	({ifelse}    if l_par exp r_par [then_stm]:stm else [else_stm]:stm) | 
+	/*@A+begin*/
+	{tmp_for}    for l_par [initializer]:stm_exp [semicolon1]:semicolon exp
+	             [semicolon2]:semicolon [updater]:stm_exp r_par 
+	             stm_no_short_if |
+	// intermediate AST transformation for replacement of noshortif stms
+	({for}       for l_par [initializer]:stm_exp [semicolon1]:semicolon exp
+	             [semicolon2]:semicolon [updater]:stm_exp r_par stm) |
+	/*@A+end*/
+	{tmp_while}	 while l_par exp r_par stm_no_short_if |
+	// intermediate AST transformation for replacement of noshortif stms
+	({while}     while l_par exp r_par stm);
+
+stm_exp = 
+	{assign}		assignment | 
+	{call}		methodinvocation |
+	/*@A+begin*/
+	{inc}       identifier inc |
+	/*@A+end*/
+	{new}			classinstancecreation;
+
+assignment = 
+	identifier assign exp;
+
+// transformation: collapse precedence cascade below into one production
+exp = 
+	// 'default' nodes not present in "fixed" AST
+	{default}	   or_exp | 
+	{assign}		   assignment |
+	// hidden alternatives
+	({or}          [left]:exp or [right]:exp) |
+	({and}         [left]:exp and [right]:exp) |
+	({eq}          [left]:exp eq [right]:exp) | 
+	({neq}         [left]:exp neq [right]:exp) |
+	({lt}          [left]:exp lt [right]:exp) | 
+	({gt}          [left]:exp gt [right]:exp) | 
+	({leq}         [left]:exp leq [right]:exp) | 
+	({geq}         [left]:exp geq [right]:exp) | 
+	({instanceof}  exp instanceof identifier) |
+	({plus}        [left]:exp plus [right]:exp) | 
+	({minus}       [left]:exp minus [right]:exp) |
+	({mult}        [left]:exp mult [right]:exp) | 
+	({div}         [left]:exp div [right]:exp) | 
+	({mod}         [left]:exp mod [right]:exp) |
+	({uminus}      minus exp) |
+	({not}         not exp) |
+	// first collapse to tmpcast, then weed out non id for first exp,
+	// and finally transform to cast
+	({tmpcast}     l_par [caster]:exp r_par [castee]:exp) |
+   ({cast}        l_par identifier r_par exp) |
+	({casttochar}  l_par char r_par exp) |
+	({id}          identifier) |
+	({this}        this) |
+	({paren}       l_par exp r_par) |
+	({new}         classinstancecreation) |
+	({call}        methodinvocation) |
+	({intconst}    intconst) |
+	({true}        true) |
+	({false}       false) |
+	({charconst}   charconst) |
+	({stringconst} stringconst) |
+	({null}        null);
+
+// all *_exp productions alternatives below deleted from AST 
+// (replaced by hidden exp alternatives)
+
+or_exp = 
+	{default}	and_exp | 
+	{or}			[left]:or_exp or [right]:and_exp;
+
+and_exp = 
+	{default}   eq_exp | 
+	{and}       [left]:and_exp and [right]:eq_exp;
+
+eq_exp = 
+	{default}   rel_exp | 
+	{eq}        [left]:eq_exp eq [right]:rel_exp | 
+	{neq}       [left]:eq_exp neq [right]:rel_exp;
+
+rel_exp = 
+	{default}    add_exp | 
+	{lt}         [left]:rel_exp lt [right]:add_exp | 
+	{gt}         [left]:rel_exp gt [right]:add_exp | 
+	{leq}        [left]:rel_exp leq [right]:add_exp | 
+	{geq}        [left]:rel_exp geq [right]:add_exp | 
+	{instanceof} rel_exp instanceof identifier;
+
+add_exp = 
+	{default}   mult_exp | 
+	{plus}      [left]:add_exp plus [right]:mult_exp | 
+	{minus}     [left]:add_exp minus [right]:mult_exp;
+
+mult_exp = 
+	{default}   unary_exp | 
+	{mult}      [left]:mult_exp mult [right]:unary_exp | 
+	{div}       [left]:mult_exp div [right]:unary_exp | 
+	{mod}       [left]:mult_exp mod [right]:unary_exp;
+
+unary_exp = 
+	{default}   unary_exp_not_minus | 
+	{minus}     minus unary_exp;
+
+unary_exp_not_minus = 
+	{default}   postfix_exp | 
+	{not}       not unary_exp | 
+	{cast}      cast_exp;
+
+cast_exp =
+	{nonchar}   l_par exp r_par unary_exp_not_minus | 
+	{char}      l_par char r_par unary_exp;
+
+postfix_exp = 
+	{id}        identifier | 
+	{primary}   primary_exp;
+
+primary_exp = 
+	{literal}   literal | 
+	{this}      this | 
+	{paren}     l_par exp r_par | 
+	{new}       classinstancecreation | 
+	{call}      methodinvocation;
+
+classinstancecreation = 
+	new identifier l_par argument_list? r_par;
+
+methodinvocation = 
+	receiver dot identifier l_par argument_list? r_par;
+
+receiver =
+	{tmpobject} postfix_exp |
+   // transformation necessary as a result of precedence cascade collapse
+   ({object}   exp) |
+   {super}     super;
+ 
+argument_list =
+// AST transformation replaces tmp by (unnamed) hidden alternative
+	(        exp+) |
+	{tmp}    exp argument_list_tail*; 
+
+argument_list_tail =
+	comma exp;
+
+// literal production alternatives deleted from AST 
+// (replaced by hidden exp alternatives)
+literal = 
+	{int}     intconst | 
+	{true}    true | 
+	{false}   false |
+	{char}    charconst | 
+	{string}  stringconst | 
+	{null}    null;	

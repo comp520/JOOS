@@ -1,0 +1,2769 @@
+%!PS-Adobe-3.0
+%%Creator: a2ps version 4.6
+%%CreationDate: Wed Sep 20 11:11:35 2000
+%%Pages: (atend)
+%%DocumentFonts: Courier Courier-Oblique Courier-BoldOblique Times-Roman Courier-Bold Helvetica Helvetica-Bold Symbol
+%%EndComments
+% Copyright (c) 1993, 1994, Miguel Santana, M.Santana@frgu.bull.fr
+
+/$a2psdict 100 dict def
+$a2psdict begin
+
+% General macros.
+/xdef {exch def} bind def
+/getfont {exch findfont exch scalefont} bind def
+
+% Set up ISO Latin 1 character encoding
+/reencodeISO {
+	dup dup findfont dup length dict begin
+	{ 1 index /FID ne { def }{ pop pop } ifelse
+	} forall
+	/Encoding ISOLatin1Encoding def
+	currentdict end definefont
+} def
+/Helvetica-Bold reencodeISO def
+/Helvetica reencodeISO def
+/Courier reencodeISO def
+/Courier-Bold reencodeISO def
+/Courier-Oblique reencodeISO def
+/Courier-BoldOblique reencodeISO def
+/Times-Roman reencodeISO def
+
+% Create Courier backspace font
+/backspacefont {
+    /Courier findfont dup length dict begin
+	{ % forall
+	    1 index /FID eq { pop pop } { def } ifelse
+	} forall
+	currentdict /UniqueID known { % if
+	    /UniqueID UniqueID 16#800000 xor def
+	} if
+	CharStrings length 1 add dict begin
+	    CharStrings { def } forall
+	    /backspace { -600 0 0 0 0 0 setcachedevice } bind def
+	    currentdict
+	end
+	/CharStrings exch def
+	/Encoding Encoding 256 array copy def
+	Encoding 8 /backspace put
+	currentdict
+    end
+    definefont pop
+} bind def
+
+% FUNCTIONS
+
+% Function filename: Initialize file printing.
+/fn
+{ /filenm xdef
+  /filenmwidth filenm stringwidth pop def
+  /filenmfont
+       filenmwidth fns gt
+       {
+	       filenmfontname
+	       fnfs fns mul filenmwidth div
+	     getfont
+       }
+       { sfnf }
+     ifelse
+  def
+} bind def
+
+% Function header: prints page header. no page
+% is passed as argument.
+/hp
+  { x sd get  y sd get hs sub 1 add  moveto
+    df setfont
+    gsave
+      x sd get y sd get moveto
+      0 hs 2 div neg rmoveto 
+      hs setlinewidth
+      0.95 setgray
+      pw 0 rlineto stroke
+    grestore
+    gsave
+      dfs hm rmoveto
+      d show				% date/hour
+    grestore
+    gsave
+      pnum cvs pop				% page pop up
+        pw (Page 999) stringwidth pop sub
+        hm
+	  rmoveto
+      (Page ) show pnum show		% page number
+    grestore
+    empty pnum copy pop
+    gsave
+      filenmfont setfont
+         fns filenm stringwidth pop sub 2 div dw add
+          bm 2 mul 
+        add 
+        hm
+      rmoveto
+        filenm show			% file name
+      grestore
+    } bind def
+
+% Function border: prints border page
+/border 
+{ x sd get y sd get moveto
+  gsave				% print four sides
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function hborder: completes border of the header.
+/hborder 
+{ gsave
+	0.7 setlinewidth
+	0 hs neg rmoveto
+	pw 0 rlineto
+	stroke
+  grestore
+} bind def
+
+% Function sheetnumber: prints the sheet number.
+/sn
+    { snx sny moveto
+      df setfont
+      pnum cvs
+	  dup stringwidth pop (0) stringwidth pop sub neg 0 rmoveto show
+      empty pnum copy pop
+    } bind def
+
+% Function loginprint: prints the login id of the requestor.
+/lgp
+    { lx ly moveto
+      df setfont
+      dup stringwidth pop neg 0 rmoveto show
+    } bind def
+
+% Function current_date: prints the current date.
+/cd
+    { dx dy moveto
+      df setfont
+      (Printed: ) show
+      td show
+    } bind def
+
+% Function filename_footer: prints the file name at bottom of page.
+/fnf
+    { fnx fny moveto
+      df setfont
+      footer center show
+    } bind def
+
+% Function center: centers text.
+/center
+    { dup stringwidth pop
+      2 div neg 0 rmoveto
+    } bind def
+
+% Function s: print a source line
+/s  { show
+      /y0 y0 bfs sub def
+      x0 y0 moveto
+    } bind def
+
+% Functions b, st, i, bi, t, sy: change to bold, standard, italic, bold-italic, times and symbol fonts
+/b  { show
+      bdf setfont
+    } bind def
+/st { show
+      bf setfont
+    } bind def
+/i  { show
+      itf setfont
+    } bind def
+/bi  { show
+      bif setfont
+    } bind def
+/t  { show
+      tf setfont
+    } bind def
+/sy { show
+      sf setfont
+    } bind def
+
+ % Function T(ab), jumps to the n-th tabulation in the current line
+/T { exch show
+       cw 8 mul mul sx cw mul add x0 add y0 moveto     } bind def
+
+% Strings used to make easy printing numbers
+/pnum 12 string def
+/empty 12 string def
+
+% Global initializations
+
+/CourierBack backspacefont
+/filenmfontname /Helvetica-Bold def
+/inch {72 mul} bind def
+
+%
+%% Meaning of some variables and functions (coded names)
+%
+% Variables from 'outside'%	twp:		twinpages?
+%	sd:		sheet side
+%	l:		line counter
+%	c:		column counter
+%	d:		date
+%	td:		current date (for today)
+%	lg:		login name
+% Functions
+%	fn:		filename printing function
+%	sn:		sheetnumber printing function
+%	cd:		current date printing function
+%	fnf:		filename footer printing function
+%	lgp:		login printing function
+%	hp:		header printing function
+% Coordinates
+%	x, y:		the logical page
+%	snx, sny:	the sheet number
+%	dx, dy:		the date
+%	lx, ly:		the login
+%	fnx, fny:	the filename (footer)
+%	scx:		x coordinate for the sheet center
+% Font sizes
+%	fnfs:		filename
+%	bfs:		body
+%	dfs:		date
+% Fonts
+%	df:		date
+%	bf:		body
+%	bdf:		bold
+%	itf:		italic
+%	tf:		times
+%	sf:		symbol
+%	sfnf:		standard filename
+% Widths and heigths
+%	cw:		a Courier char
+%	dw:		date
+%	pw, ph:		page
+%	sw, sh:		sheet
+% Margins
+%	hm:		header
+%	tm:		top
+%	bm:		body
+%	rm:		right
+%	lm:		left
+%	hs:		header size
+%	fns:		filename size
+
+% Initialize page description variables.
+/x0 0 def
+/y0 0 def
+/sh 11 inch def
+/sw 8.5 inch def
+/margin 1.4 inch def
+/rm margin 3 div def
+/lm margin 2 mul 3 div def
+/d () def
+/td (Sep 20 2000 11:11) def
+/lg (Printed by Prof. L. HENDREN from willy) def
+%%EndProlog
+
+/docsave save def
+%%Page: 1 1
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( appletlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+1 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( // java.applet.Applet - page 234 Nutshell 1.ed - 275 Nutshell 2.ed) s
+( extern public class Applet extends Panel in "java.applet" {) s
+(   public Applet\(\);) s
+(   public void destroy\(\); // empty) s
+(   public AppletContext getAppletContext\(\);) s
+(   public String getAppletInfo\(\);) s
+(   public AudioClip getAudioClip\(URL url,String name\);) s
+(   public URL getCodeBase\(\);) s
+(   public URL getDocumentBase\(\);) s
+(   public Image getImage\(URL url, String name\);) s
+(   public String getParameter\(String name\);) s
+(   public void init\(\); // empty) s
+(   public boolean isActive\(\);) s
+(   public void play\(URL url, String name\);) s
+(   public void resize\(int width, int height\); // overrides Component.resize\(\)) s
+(   public final void setStub\(AppletStub stub\);) s
+(   public void showStatus\(String msg\);) s
+(   public void start\(\); // empty) s
+(   public void stop\(\);  // empty) s
+( }) s
+( ) s
+( // java.applet.AppletContext - page 235 Nutshell 1.ed - 277 Nutshell 2.ed) s
+( //   should be an interface) s
+( extern public abstract class AppletContext in "java.applet" {) s
+(   public AppletContext\(\);) s
+(   public abstract Applet getApplet\(String name\);) s
+(   // public abstract Enumeration getApplets\(\);) s
+(   public abstract AudioClip getAudioClip\(URL url\);) s
+(   public abstract Image getImage\(URL url\);) s
+(   public abstract void showDocument\(URL url\);) s
+(   public abstract void showStatus\(String status\);) s
+( }) s
+( ) s
+( // java.applet.AppletStub - page 235 Nutshell 1.ed - 277 Nutshell 2.ed) s
+( // should be an interface) s
+( extern public abstract class AppletStub in "java.applet" {) s
+(   public AppletStub\(\);) s
+(   public abstract void appletResize\(int width, int height\);) s
+(   public abstract AppletContext getAppletContext\(\);) s
+(   public abstract URL getCodeBase\(\);) s
+(   public abstract URL getDocumentBase\(\);) s
+(   public abstract String getParameter\(String name\);) s
+(   public abstract boolean isActive\(\);) s
+( }) s
+( ) s
+( // java.applet.AudioClip  - page 236 Nutshell 1.ed - 277 Nutshell 2.ed ) s
+( // should be an interface ) s
+( extern public abstract class AudioClip in "java.applet" {) s
+(   public AudioClip\(\);) s
+(   public abstract void loop\(\);) s
+(   public abstract void play\(\);) s
+(   public abstract void stop\(\);) s
+( }) s
+/sd 1 def
+/sd 0 def
+1 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 2 2
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+1 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( // -----------------------------------------------------------------) s
+( // The following classes are defined in the standard java awt class) s
+( //   libraries,  and are described in the book:) s
+( //   "Java in a Nutshell", by David Flanagan.) s
+( // -----------------------------------------------------------------) s
+( ) s
+( // java.awt.BorderLayout -  page 240 Nutshell 1.ed - page 286 Nutshell 2.ed) s
+( extern public class BorderLayout extends LayoutManager in "java.awt" { ) s
+( // should be extends Object implements LayoutManager) s
+(   public BorderLayout\(\);) s
+(   public BorderLayout\(int hgap, int vgap\);) s
+(   public void addLayOutComponent\(String name, Component comp\);) s
+(   public void layoutContainer\(Container target\);) s
+(   public Dimension minimumLayoutSize\(Container target\);) s
+(   public Dimension perferredLayoutSize\(Container target\);) s
+(   public void removeLayoutComponent\(Component comp\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.awt.Button - page 240 Nutshell 1.ed - 287 Nutshell 2.ed) s
+( extern public class Button extends Component in "java.awt" {) s
+(   public Button\(\);) s
+(   public Button\(String label\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\);) s
+(   public String getLabel\(\);) s
+(   public void setLabel\(String label\);) s
+( }) s
+( ) s
+( // java.awt.Canvas - page 240 Nutshell 1.ed - 287 Nutshell 2.ed) s
+( extern public class Canvas extends Component in "java.awt" {) s
+(   public Canvas\(\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\);) s
+(   public void paint\(Graphics g\); // overrides Component.paint\(\)) s
+( }) s
+(  ) s
+( // java.awt.CardLayout - page 241 Nutshell 1.ed - 288 Nutshell 2.ed) s
+( extern public class CardLayout extends LayoutManager in "java.awt" {) s
+( // should be extends Object implements LayoutManager) s
+(   public CardLayout\(\);) s
+(   public CardLayout\(int hgap, int vgap\);) s
+(   public void addLayoutComponent\(String name, Component comp\);) s
+(   public void first\(Container parent\);) s
+(   public void last\(Container parent\);) s
+(   public void layoutContainer\(Container parent\);) s
+(   public Dimension minimumLayoutSize\(Container parent\);) s
+(   public void next\(Container parent\);) s
+(   public Dimension preferredLayoutSize\(Container parent\);) s
+(   public void previous\(Container parent\);) s
+(   public void removeLayoutComponent\(Component comp\);) s
+(   public void show\(Container parent, String name\);) s
+(   public String toString\(\); // overrides Object.toString\(\);) s
+( }) s
+( ) s
+( // java.awt.Checkbox - page 241 Nutshell 1.ed - 288 Nutshell 2.ed) s
+( extern public class Checkbox extends Component in "java.awt" {) s
+(   public Checkbox\(\);) s
+(   public Checkbox\(String label\);) s
+(   public Checkbox\(String label, boolean state\);) s
+(   public Checkbox\(String label, boolean state, CheckboxGroup group\);) s
+(   public Checkbox\(String label, CheckboxGroup group, boolean state\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\);) s
+(   public CheckboxGroup getCheckboxGroup\(\);) s
+(   public String getLabel\(\);) s
+(   public boolean getState\(\);) s
+(   public void setCheckboxGroup\(CheckboxGroup g\);) s
+(   public void setLabel\(String label\);) s
+(   public void setState\(boolean state\);) s
+( }) s
+( ) s
+( // java.awt.CheckboxGroup - page 242 Nutshell 1.ed - 289 Nutshell 2.ed) s
+( extern public class CheckboxGroup extends Object in "java.awt" {) s
+/sd 1 def
+2 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public CheckboxGroup\(\); // empty) s
+(   public Checkbox getCurrent\(\);) s
+(   public synchronized void setCurrent\(Checkbox box\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.awt.CheckboxMenuItem - page 242 Nutshell 1.ed - 290 Nutshell 2.ed) s
+( extern public class CheckboxMenuItem extends MenuItem in "java.awt" {) s
+(   public CheckboxMenuItem\(\);) s
+(   public CheckboxMenuItem\(String label\);) s
+(   public CheckboxMenuItem\(String label, boolean state\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\);) s
+(   public boolean getState\(\);) s
+(   public String paramString\(\); // overrides MenuItem.paramString\(\)) s
+(   public void setState\(boolean t\);) s
+( }) s
+(  ) s
+( // java.awt.Choice - page 243 Nutshell 1.ed - 290 Nutshell 2.ed) s
+( extern public class Choice extends Component in "java.awt" {) s
+(   public Choice\(\);) s
+(   public synchronized void addItem\(String item\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\);) s
+(   public int countItems\(\);) s
+(   public String getItem\(int index\);) s
+(   public int getSelectedIndex\(\);) s
+(   public String getSelectedItem\(\);) s
+(   public synchronized void select\(int pos\); // throws IllegalArgumentException) s
+(   // public void select\(String str\);) s
+( }) s
+( ) s
+( ) s
+( // java.awt.Color - page 243 Nutshell 1.ed - 291 Nutshell 2.ed) s
+( // see also joos.lib.JoosConstants for color constants) s
+( extern public class Color in "java.awt" {) s
+(   public Color\(int r, int g, int b\);) s
+(   public Color\(int rgb\);) s
+(   public Color brighter\(\);) s
+(   public Color darker\(\);) s
+(   public boolean equals\(Object obj\); // overrides Object.equals\(\)) s
+(   public int getBlue\(\);) s
+(   public int getGreen\(\);) s
+(   public int getRGB\(\);) s
+(   public int getRed\(\);) s
+(   public String toString\(\); // overrides Ojbect.toString\(\);) s
+( }  ) s
+( ) s
+( // java.awt.Component - page 244 Nutshell 1.ed - 292 Nutshell 2.ed) s
+( // should be extends Object, but need to stick in ImageObserver) s
+( extern public abstract class Component extends ImageObserver in "java.awt" {) s
+(   public Component\(\);) s
+(   public void addNotify\(\);) s
+(   public Rectangle bounds\(\);) s
+(   public int checkImage\(Image image, ImageObserver observer\);) s
+(   public Image createImage\(int width, int height\);) s
+(   public void deliverEvent\(Event e\);) s
+(   public synchronized void disable\(\);) s
+(   public synchronized void enable\(\);) s
+(   // public void enable\(boolean cond\);) s
+(   public Color getBackground\(\);) s
+(   // public synchronized ColorModel getColorModel\(\);) s
+(   public Font getFont\(\);) s
+(   public FontMetrics getFontMetrics\(Font font\);) s
+(   public Color getForeground\(\);) s
+(   public Graphics getGraphics\(\);) s
+(   public Container getParent\(\);) s
+(   // public ComponentPeer getPeer\(\);) s
+(   public Toolkit getToolkit\(\);) s
+(   public boolean gotFocus\(Event evt, Object what\);) s
+(   public boolean handleEvent\(Event evt\);) s
+(   public synchronized void hide\(\);) s
+(   public boolean ImageUpdate\(Image img, int flags, int x, int y, int w, int h\);) s
+/sd 0 def
+2 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 3 3
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+3 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public synchronized boolean inside\(int x, int y\);) s
+(   public void invalidate\(\);) s
+(   public boolean isEnabled\(\);) s
+(   public boolean isShowing\(\);) s
+(   public boolean isValid\(\);) s
+(   public boolean isVisible\(\);) s
+(   public boolean keyDown\(Event evt, int key\);) s
+(   public boolean keyUp\(Event evt, int key\);) s
+(   public void layout\(\);  // empty) s
+(   public void list\(\);) s
+(   public Component locate\(int x, int y\);) s
+(   public Point location\(\);) s
+(   public boolean lostFocus\(Event evt, Object what\);) s
+(   public Dimension minimumSize\(\);) s
+(   public boolean mouseDown\(Event evt, int x, int y\);) s
+(   public boolean mouseDrag\(Event evt, int x, int y\);) s
+(   public boolean mouseEnter\(Event evt, int x, int y\);) s
+(   public boolean mouseExit\(Event evt, int x, int y\);) s
+(   public boolean mouseMove\(Event evt, int x, int y\);) s
+(   public boolean mouseUp\(Event evt, int x, int y\);) s
+(   public void move\(int x, int y\);) s
+(   public void nextFocus\(\);) s
+(   public void paint\(Graphics g\); // empty) s
+(   public void paintAll\(Graphics g\);) s
+(   public boolean postEvent\(Event e\);) s
+(   public Dimension preferredSize\(\);) s
+(   // public boolean prepareImage\(Image image,ImageObserver observer\);) s
+(   public void print\(Graphics g\);) s
+(   public void printAll\(Graphics g\);) s
+(   public synchronized void removeNotify\(\);) s
+(   public void repaint\(\);) s
+(   public void requestFocus\(\);) s
+(   public synchronized void reshape\(int x, int y, int width, int height\);) s
+(   public void resize\(int width, int height\);) s
+(   public synchronized void setBackground\(Color c\);) s
+(   public synchronized void setCursor\(Cursor cursor\);) s
+(   public synchronized void setFont\(Font f\); ) s
+(   public synchronized void setForeground\(Color c\);) s
+(   public synchronized void show\(\);) s
+(   // public void show\(boolean cond\);) s
+(   public Dimension size\(\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+(   public void update\(Graphics g\);) s
+(   public void validate\(\);) s
+( }) s
+( ) s
+( // java.awt.Container - page 246 Nutshell 1.ed - 295 Nutshell 2.ed) s
+( // see also joos.lib.JoosContainer for add\(Sring name, Component comp\)) s
+( extern public abstract class Container extends Component in "java.awt" {  ) s
+(   public Container\(\);) s
+(   public Component add\(Component comp\);) s
+(   // public Component add\(String name, Component comp\);) s
+(   // public Component add\(Component comp, int pos\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\)) s
+(   public int countComponents\(\);) s
+(   public void deliverEvent\(Event e\);) s
+(   public synchronized Component getComponent\(int n\);) s
+(   public LayoutManager getLayout\(\);) s
+(   public Insets insets\(\);) s
+(   public synchronized void layout\(\); // overrides Component.layout\(\)) s
+(   //public void list\(PrintStream out, int indent\);// overrides Component.list\(\)) s
+(   public Component locate\(int x, int y\); // overrides Component.locate\(\)) s
+(   public synchronized Dimension minimumSize\(\); // overrides Component) s
+(   public void paintComponents\(Graphics g\);) s
+(   public synchronized Dimension preferredSize\(\); // overrrides Component) s
+(   public void printComponents\(Graphics g\);) s
+(   public synchronized void remove\(Component comp\);) s
+(   public synchronized void removeAll\(\);) s
+(   public synchronized void removeNotify\(\); // overrides Component) s
+(   public void setLayout\(LayoutManager mgr\);) s
+(   public synchronized void validate\(\); // overrides Component ) s
+/sd 1 def
+4 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( }) s
+( ) s
+( // java.awt.Cursor - not in java 1.0 - 297 Nutshell 2.ed) s
+( extern public class Cursor extends Object in "java.awt" {) s
+( // see also joos.lib.JoosConstants,   C_DEFAULT_CURSOR;) s
+( //                                    C_CROSSHAIR_CURSOR) s
+( //                                    C_HAND_CURSOR) s
+( //                                    C_MOVE_CURSOR) s
+( //                                    C_TEXT_CURSOR) s
+( //                                    C_WAIT_CURSOR) s
+( //                                    C_N_RESIZE_CURSOR) s
+( //                                    C_S_RESIZE_CURSOR) s
+( //                                    C_W_RESIZE_CURSOR) s
+( //                                    C_E_RESIZE_CURSOR) s
+( //                                    C_NE_RESIZE_CURSOR) s
+( //                                    C_NW_RESIZE_CURSOR) s
+( //                                    C_SE_RESIZE_CURSOR) s
+( //                                    C_SW_RESIZE_CURSOR) s
+(   public Cursor\(int type\);) s
+(   public Cursor getDefaultCursor\(\);  ) s
+(   public Cursor getPredefinedCursor\(int type\);) s
+(   public int getType\(\);) s
+( }) s
+( ) s
+( ) s
+( // java.awt.Dialog - page 247 Nutshell 1.ed - 298 Nutshell 2.ed) s
+( extern public class Dialog extends Window in "java.awt" {) s
+(   public Dialog\(Frame parent\);) s
+(   public Dialog\(Frame parent, boolean modal\); ) s
+(   public Dialog\(Frame parent, String title\); ) s
+(   public Dialog\(Frame parent, String title, boolean modal\); ) s
+(   public synchronized void addNotify\(\); // overrides Window) s
+(   public String getTitle\(\);) s
+(   public boolean isModal\(\);) s
+(   public boolean isResizable\(\);) s
+(   public void setResizable\(boolean resizable\);) s
+(   public void setTitle\(String title\);) s
+( }) s
+( ) s
+( // java.awt.Dimension - page 248 Nutshell 1.ed - 299 Nutshell 2.ed) s
+( // see also joos.lib.Dimension) s
+( extern public class Dimension extends Object in "java.awt" {) s
+(   public Dimension\(\);) s
+(   public Dimension\(Dimension d\);) s
+(   public Dimension\(int width, int height\);) s
+(   public Dimension getSize\(\);   ) s
+(   public void setSize\(int width, int height\);) s
+(   public String toString\(\); // overrides Object.toString\(\) ) s
+( }) s
+( ) s
+( // java.awt.Event - page 248 Nutshell 1.ed - 299 Nutshell 2.ed) s
+( // see also java.lib.JoosConstants) s
+( // see also java.lib.JoosEvent) s
+( extern public class Event extends Object in "java.awt" {) s
+( ) s
+(   public Event\(Object target, int id, Object arg\);) s
+(   public boolean controlDown\(\);) s
+(   public boolean metaDown\(\);) s
+(   public boolean shiftDown\(\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+(   public void translate\(int x, int y\);) s
+( }) s
+( ) s
+( // java.awt.FileDialog - page 250 Nutshell 1.ed - 301 Nutshell 2.ed) s
+( // see also java.lib.JoosConstants ) s
+( extern public class FileDialog extends Dialog in "java.awt" {) s
+(   public FileDialog\(Frame parent\);) s
+(   public FileDialog\(Frame parent, String title\);) s
+(   public FileDialog\(Frame parent, String title, int mode\);) s
+(   public synchronized void addNotify\(\); // overrides Dialog.addnotify\(\)) s
+(   public String getDirectory\(\);) s
+/sd 0 def
+3 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 4 4
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+5 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public String getFile\(\);) s
+(   // public FilenameFilter getFilenameFilter\(\);) s
+(   public int getMode\(\);) s
+(   public void setDirectory\(String dir\);) s
+(   public void setFile\(String file\);) s
+(   // public void setFilenameFilter\(FilenameFilter filter\);) s
+(   public void setMode\(int mode\);) s
+( }) s
+( ) s
+( // java.awt.FlowLayout - page 250 Nutshell 1.ed - 302 Nutshell 2.ed) s
+( // see also java.lib.JoosConstants ) s
+( extern public class FlowLayout extends LayoutManager in "java.awt" {) s
+( // should be extends Object implements LayoutManager) s
+(   public FlowLayout\(\);) s
+(   public FlowLayout\(int align\);) s
+(   public FlowLayout\(int align, int hgap, int vgap\);) s
+(   public void addLayoutComponent\(String name, Component comp\);) s
+(   public void layoutContainer\(Container target\);) s
+(   public Dimension minimumLayoutSize\(Container target\);) s
+(   public Dimension preferredLayoutSize\(Container target\);) s
+(   public void removeLayoutComponent\(Component comp\); // empty) s
+(   public void setVgap\(int vgap\);) s
+(   public void setHgap\(int hgap\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.awt.Font - page 251 Nutshell 1.ed - 303 Nutshell 2.ed) s
+( //   also see joos.lib.JoosConstants) s
+( extern public class Font extends Object in "java.awt" {) s
+(   public Font\(String name, int style, int size\);) s
+(   public boolean equals\(Object obj\); // overrides Object.equals\(\)) s
+(   public String getFamily\(\);) s
+(   public String getName\(\);) s
+(   public int getSize\(\);) s
+(   public int getStyle\(\);) s
+(   public boolean isBold\(\);) s
+(   public boolean isItalic\(\);) s
+(   public boolean isPlain\(\);) s
+(   public String toString\(\); // overrides Object.toString\(\);) s
+( }) s
+( ) s
+( // java.awt.FontMetrics - page 252 Nutshell 1.ed - 304 Nutshell 2.ed) s
+( extern public class FontMetrics extends Object in "java.awt" {) s
+(   public FontMetrics\(Font font\);  // should be protected ) s
+(   public int charWidth\(int ch\);) s
+(   public int getAscent\(\);) s
+(   public int getDescent\(\);) s
+(   public Font getFont\(\);) s
+(   public int getHeight\(\);) s
+(   public int getLeading\(\);) s
+(   public int getMaxAdvance\(\);) s
+(   public int getMaxAscent\(\);) s
+(   public int getMaxDecent\(\);) s
+(   public int getMaxDescent\(\);) s
+(   public int stringWidth\(String str\);) s
+(   public String toString\(\); // overrides Object) s
+( }) s
+( ) s
+( // java.awt.Frame - page 252 Nutshell 1.ed - 305 Nutshell 2.ed) s
+( //   also see joos.lib.JoosConstants) s
+( extern public class Frame extends Window in "java.awt" { ) s
+( // implements MenuContainer) s
+(   public Frame\(\);) s
+(   public Frame\(String title\);) s
+(   public synchronized void addNotify\(\); // overrides Window.addNotify\(\)) s
+(   public synchronized void dispose\(\);   // overrides Window.dispose\(\)) s
+(   public int getCursorType\(\);) s
+(   public Image getIconImage\(\);) s
+(   public MenuBar getMenuBar\(\);) s
+(   public String getTitle\(\);) s
+(   public boolean IsResizable\(\);) s
+/sd 1 def
+6 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   // public synchronized void remove\(MenuComponent m\); // problem with override) s
+(                                                        // of remove in Container) s
+(   public void SetCursor\(int cursorType\);) s
+(   public void setIconImage\(Image image\);) s
+(   public synchronized void setMenuBar\(MenuBar mb\);) s
+(   public void setResizable\(boolean resizable\);) s
+(   public void setTitle\(String title\);) s
+( }) s
+( ) s
+( // java.awt.Graphics - page 254 Nutshell 1.ed - 306 Nutshell 2.ed) s
+( extern public abstract class Graphics extends Object in "java.awt" {) s
+(   public Graphics\(\);) s
+(   public abstract void clearRect\(int x, int y, int width, int height\); ) s
+(   public abstract void clipRect\(int x, int y, int width, int height\);  ) s
+(   public abstract void copyArea\(int x, int y, int width, int height, ) s
+(                                                             int dx, int dy\);) s
+(   public Graphics create\(int x, int y, int width, int height\);) s
+(   public abstract void dispose\(\);  ) s
+(   public void draw3DRect\(int x, int y, int width, int height, boolean raised\); ) s
+(   public abstract void drawArc\(int x, int y, int width, int height, ) s
+(                                   int startAngle, int arcAngle\); ) s
+(   public abstract boolean drawImage\(Image img, int x, int y, ) s
+(                                         ImageObserver observer\); ) s
+(   public abstract void drawLine\(int x1, int y1, int x2, int y2\); ) s
+(   public abstract void drawOval\(int x, int y, int width, int height\); ) s
+(   public void drawPolygon\(Polygon p\);) s
+(   public void drawRect\(int x, int y, int width, int height\);) s
+(   public abstract void drawRoundRect\(int x, int y, int width, int height, ) s
+(                                int arcWidth, int arcHeight\);) s
+(   public abstract void drawString\(String str, int x, int y\);  ) s
+(   public void fill3DRect\(int x, int y, int width, int height, boolean raised\); ) s
+(   public abstract void fillArc\(int x, int y, int width, int height, ) s
+(                                int startAngle, int arcAngle\); ) s
+(   public abstract void fillOval\(int x, int y, int width, int height\); ) s
+(   public void fillPolygon\(Polygon p\);) s
+(   public abstract void fillRect\(int x, int y, int width, int height\); ) s
+(   public abstract void fillRoundRect\(int x, int y, int width, int height,) s
+(                                  int arcWidth, int arcHeight\);) s
+(   public void finalize\(\);) s
+(   public abstract Rectangle getClipRect\(\);) s
+(   public abstract Color getColor\(\); ) s
+(   public abstract Font getFont\(\); ) s
+(   public abstract FontMetrics getFontMetrics\(Font f\);) s
+(   public abstract void setColor\(Color c\); ) s
+(   public abstract void setFont\(Font font\); ) s
+(   public abstract void setPaintMode\(\); ) s
+(   public abstract void setXORMode\(Color c1\);) s
+( ) s
+(   public String toString\(\); // overrides Object) s
+(   public abstract void translate\(int x, int y\); ) s
+( }) s
+( ) s
+( // java.awt.GridBagConstraints - page 255 Nutshell 1.ed - 307 Nutshell 2.ed) s
+( //    see also joos.lib.JoosConstants) s
+( //    see also joos.lib.JoosGridBagConstraints) s
+( extern public class GridBagConstraints extends Object in "java.awt" {) s
+( // implements Cloneable) s
+(   public GridBagConstraints\(\);) s
+( }) s
+( ) s
+( // java.awt.GridBagLayout - page 256 Nutshell 1.ed - 309 Nutshell 2.ed) s
+( //      see also joos.lib.JoosConstants ) s
+( extern public class GridBagLayout extends LayoutManager in "java.awt" {) s
+( // implements LayoutManager) s
+(   public GridBagLayout\(\);) s
+(   public void addLayOutComponent\(String name, Component comp\);) s
+(   public GridBagConstraints getConstraints\(Component comp\);) s
+(   public Point getLayoutOrigin\(\);) s
+(   public void layoutContainer\(Container target\);) s
+(   public Point location\(int x, int y\);) s
+(   public Dimension minimumLayoutSize\(Container target\);) s
+/sd 0 def
+4 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 5 5
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+7 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public Dimension perferredLayoutSize\(Container target\);) s
+(   public void removeLayoutComponent\(Component comp\); // empty) s
+(   public void setConstraints\(Component comp, GridBagConstraints constraints\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.awt.GridLayout - page 257 Nutshell 1.ed - 310 Nutshell 2.ed) s
+( extern public class GridLayout extends LayoutManager in "java.awt" {) s
+(   // implements LayoutManager) s
+(   public GridLayout\(\);) s
+(   public GridLayout\(int rows, int cols\);) s
+(   public GridLayout\(int rows, int cols, int Hgap, int Vgap\);) s
+(   public void addLayOutComponent\(String name, Component comp\);) s
+(   public int getColumns\(\);) s
+(   public int getHgap\(\);) s
+(   public int getRows\(\);) s
+(   public int getVgap\(\);) s
+(   public void layoutContainer\(Container parent\);) s
+(   public Dimension minimumLayoutSize\(Container parent\);) s
+(   public Dimension perferredLayoutSize\(Container parent\);) s
+(   public void removeLayoutComponent\(Component comp\); // empty) s
+(   public void setColumns\(int cols\);) s
+(   public void setHgap\(int hgap\);) s
+(   public void setRows\(int rows\);) s
+(   public void setVgap\(int vgap\);) s
+(   public String toString\(\); // overrides Object.toString\(\);) s
+( }) s
+( ) s
+( // java.awt.Image - page 258 Nutshell 1.ed - 311 Nutshell 2.ed) s
+( // see also joos.lib.JoosConstants ) s
+( extern public abstract class Image extends Object in "java.awt" {) s
+(   public Image\(\);) s
+(   public abstract void flush\(\);) s
+(   public abstract Graphics getGraphics\(\);) s
+(   public abstract int getHeight\(ImageObserver observer\);) s
+(   public abstract Object getProperty\(String name, ImageObserver obs\);) s
+(   public abstract ImageProducer getSource\(\);) s
+(   public abstract int getWidth\(ImageObserver observer\);) s
+( }) s
+( ) s
+( // java.awt.image.ImageConsumer - page 275 Nutshell 1.ed - 365 Nutshell 2.ed) s
+( // should be an interface - Do not try to extend this in a JOOS program) s
+( extern public abstract class ImageConsumer extends Object in "java.awt.image" {) s
+(   public ImageConsumer\(\);) s
+(   public abstract void imageComplete\(int status\);) s
+(   // public abstract void setColorModel\(ColorModel m\);) s
+(   public abstract void setDimensions\(int width, int height\);) s
+(   public abstract void setHints\(int hintflags\);) s
+( }) s
+( ) s
+( // java.awt.image.ImageObserver - page 276 Nutshell 1.ed - 367 Nutshell 2.ed) s
+( // should be an interface - DO not try to extend this in a JOOS program) s
+( extern public abstract class ImageObserver extends Object in "java.awt.image" {) s
+(   public ImageObserver\(\);) s
+(   public abstract boolean imageUpdate\(Image img, int infoflags,) s
+(                                       int x, int y, int w, int h\);) s
+( }) s
+( ) s
+( // java.awt.image.ImageProducer - page 276 Nutshell 1.ed - 367 Nutshell 2.ed) s
+( // should be an interface - do not try to extend this in a JOOS program) s
+( extern public abstract class ImageProducer extends Object in "java.awt.image" {) s
+(   public ImageProducer\(\);) s
+(   public abstract void addConsumer\(ImageConsumer ic\);) s
+(   public abstract boolean isConsumer\(ImageConsumer ic\);) s
+(   public abstract void removeConsumer\(ImageConsumer ic\);) s
+(   public abstract void requestTopDownLeftRightResend\(ImageConsumer ic\);) s
+(   public abstract void startProduction\(ImageConsumer ic\);) s
+( }) s
+(                         ) s
+( // java.awt.Insets - page 258 Nutshell 1.ed - 312 Nutshell 2.ed) s
+( extern public class Insets extends Object in "java.awt" { ) s
+/sd 1 def
+8 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   // implements Cloneable) s
+(   public Insets\(int top, int left, int bottom, int right\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+(  ) s
+( // java.awt.Label - page 259 Nutshell 1.ed - 313 Nutshell 2.ed) s
+( //    see also joos.lib.JoosConstants \(note that you must use) s
+( //            LABEL_CENTER\(\) instead of CENTER,  same for LEFT and RIGHT.) s
+( extern public class Label extends Component in "java.awt" {) s
+(   public Label\(\);) s
+(   public Label\(String label\);) s
+(   public Label\(String label, int alignment\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\)) s
+(   public int getAlignment\(\);) s
+(   public void setAlignment\(int alignment\); // throws IllegalArgument Exc) s
+(   public String getText\(\);) s
+(   public void setText\(String s\);) s
+( }) s
+( ) s
+( // java.awt.LayoutManager - page 259 Nutshell 1.ed - 313 Nutshell 2.ed) s
+( //    should be public abstract interface LayoutManager ) s
+( //    do NOT try to extend this is a JOOS program ) s
+( extern public abstract class LayoutManager extends Object in "java.awt" {) s
+(   public LayoutManager\(\);) s
+(   public abstract void addLayoutComponent\(String name, Component comp\);) s
+(   public abstract void layoutContainer\(Container parent\);) s
+(   public abstract Dimension minimumLayoutSize\(Container parent\);) s
+(   public abstract Dimension preferredLayoutSize\(Container parent\);) s
+(   public abstract void removeLayoutComponent\(Component comp\);) s
+( }) s
+( ) s
+( // java.awt.List - page 260 Nutshell 1.ed - Nutshell 2.ed 314) s
+( extern public class List extends Component in "java.awt" {) s
+(   public List\(\);) s
+(   public List\(int rows\);) s
+(   public List\(int rows, boolean multipleSelections\);) s
+(   public synchronized void addItem\(String item\);) s
+(   //public synchronized void addItem\(String item, int index\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\)) s
+(   public boolean allowsMultipleSelections\(\);) s
+(   public synchronized void clear\(\);) s
+(   public int countItems\(\);) s
+(   public synchronized void delItem\(int position\);) s
+(   public synchronized void delItems\(int start, int end\);) s
+(   public synchronized void deselect\(int index\);) s
+(   public String getItem\(int index\);) s
+(   public int getRows\(\);) s
+(   public synchronized int getSelectedIndex\(\);) s
+(   public synchronized int getSelectedItem\(\);) s
+(   public int getVisibleIndex\(\);) s
+(   public synchronized boolean isSelected\(int index\);) s
+(   public void makeVisible\(int index\);) s
+(   public Dimension mimimumSize\(\); // overrides Component.minimumSize\(\)) s
+(   public Dimension preferredSize\(\); // overrides Component.preferredSize\(\)) s
+(   public synchronized void removeNotify\(\); // overrides Component.removeNotify\(\)) s
+(   public synchronized void replaceItem\(String newValue, int index\);) s
+(   public synchronized void select\(int index\);) s
+(   public void setMultipleSelections\(boolean v\);) s
+( }) s
+( ) s
+( // java.awt.MediaTracker - page 261 Nutshell 1.ed - 316 Nutshell 2.ed) s
+( // see also joos.lib.JoosConstants ) s
+( // see also joos.lib.JoosMediaTracker that gives new versions) s
+( //            of waitForAll and waitForId that return bools instead) s
+( //            of throwing InterruptedException) s
+( extern public class MediaTracker extends Object in "java.awt" {) s
+(   public MediaTracker\(Component comp\);) s
+(   public void addImage\(Image image, int d\);) s
+(   // public void addImage\(Image image, int d, int w, int h\);) s
+(   // public boolean checkAll\(\);) s
+(   public synchronized boolean checkAll\(boolean load\);) s
+/sd 0 def
+5 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 6 6
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+9 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   // public boolean checkID\(int id\);) s
+(   public synchronized boolean checkID\(int id,boolean load\);) s
+(   public synchronized boolean isErrorAny\(\);) s
+(   public synchronized boolean isErrorID\(int id\);) s
+(   public int statusAll\(boolean load\);) s
+(   public int statusID\(int id, boolean load\);) s
+(   // public void waitForAll\(\) throws InterruptedException;) s
+(   // public void waitForID\(int id\) throws InterruptedException;) s
+( }) s
+( ) s
+( // java.awt.Menu - page 262 Nutshell 1.ed - 317 Nutshell 2.ed) s
+( extern public class Menu extends MenuItem in "java.awt" {) s
+(   // implements MenuContainer) s
+(   public Menu\(\);) s
+(   public Menu\(String label\);) s
+(   public Menu\(String label, boolean tearOff\);) s
+(   public synchronized MenuItem add\(MenuItem mi\);) s
+(   // public void add\(String label\);) s
+(   public synchronized void addNotify\(\); // overrides MenuItem.addNotify\(\)) s
+(   public void addSeparator\(\);) s
+(   public int countItems\(\);) s
+(   public MenuItem getItem\(int index\);) s
+(   public boolean isTearOff\(\);) s
+(   public synchronized void remove\(int index\);) s
+(   // public synchronized void remove\(MenuComponent item\);) s
+(   public synchronized void removeNotify\(\); // overrides MenuComponent.removeNotify) s
+( \(\)) s
+( }) s
+( ) s
+( // java.awt.MenuBar - page 262 Nutshell 1.ed - 317 Nutshell 2.ed) s
+( extern public class MenuBar extends MenuComponent in "java.awt" {) s
+(   // implements MenuContainer) s
+(   public MenuBar\(\); // empty) s
+(   public synchronized Menu add\(Menu m\);) s
+(   public synchronized void addNotify\(\);) s
+(   public int countMenus\(\);) s
+(   public Menu getHelpMenu\(\);) s
+(   public Menu getMenu\(int i\);) s
+(   public synchronized void remove\(int index\);) s
+(   // public synchronized void remove\(MenuComponent m\);) s
+(   public void removeNotify\(\); // overrides MenuComponent.removeNotify\(\)) s
+(   public synchronized void setHelpMenu\(Menu m\);) s
+( }) s
+( ) s
+( // java.awt.MenuComponent - page 263 Nutshell 1.ed - 318 Nutshell 2.ed) s
+( extern public abstract class MenuComponent extends Object in "java.awt" {) s
+(   public MenuComponent\(\); // empty) s
+(   public Font getFont\(\);) s
+(   //public MenuContainer getParent\(\);) s
+(   //public MenuComponentPerr getPeer\(\);) s
+(   public boolean postEvent\(Event evt\);) s
+(   public void removeNotify\(\);) s
+(   public void setFont\(Font f\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.awt.MenuContainer - page 263 Nutshell 1.ed - 319 Nutshell 2.ed) s
+( // public abstract interface MenuContainer {) s
+( //   public abstract Font getFont\(\);) s
+( //   public abstract boolean postEvent\(Event evt\);) s
+( //   public abstract void remove\(MenuComponent comp\);) s
+( // } ) s
+( ) s
+( // java.awt.MenuItem - page 264 Nutshell 1.ed - 319 Nutshell 2.ed) s
+( extern public class MenuItem extends MenuComponent in "java.awt" {) s
+(   public MenuItem\(\);) s
+(   public MenuItem\(String label\);) s
+(   public MenuItem\(String label, MenuShortcut s\);) s
+(   public synchronized void addNotify\(\);) s
+(   public void disable\(\);) s
+(   // public void enable\(\);) s
+/sd 1 def
+10 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public void enable\(boolean cond\);) s
+(   public String getLabel\(\);) s
+(   public boolean isEnabled\(\);) s
+(   // public String paramString\(\); // overrides MenuComponent.paramString\(\)) s
+(   public void setLabel\(String label\); ) s
+( }) s
+( ) s
+( // java.awt.MenuShortcut - Not in Java 1.0 - Nutshell 2.ed 320) s
+( extern public class MenuShortcut extends Object in "java.awt" {) s
+(   public MenuShortcut\(int key\);) s
+(   public MenuShortcut\(int key, boolean useShiftModifier\);) s
+(   public boolean equals\(Object obj\);) s
+(   public int getKey\(\);) s
+(   public String toString\(\);) s
+(   public boolean usesShiftModifier\(\);) s
+( }) s
+( ) s
+( // java.awt.Panel - page 264 Nutshell 1.ed - 321 Nutshell 2.ed) s
+( extern public class Panel extends Container in "java.awt" {) s
+(   public Panel\(\);) s
+(   public Panel\(LayoutManager layout\);) s
+(   public synchronized void addNotify\(\); // overrides Container.addNotify\(\)) s
+( }) s
+( ) s
+( // java.awt.Point - page 265 Nutshell 1.ed - 321 Nutshell 2.ed) s
+( extern public class Point extends Object in "java.awt" {) s
+(   public Point\(\);) s
+(   public Point\(Point p\);) s
+(   public Point\(int x, int y\);) s
+(   public boolean equals\(Object obj\); // overrides Object.equals\(\)) s
+(   public Point getLocation\(\);) s
+(   public void setLocation\(int x, int y\);) s
+(   public void move\(int x, int y\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+(   public void translate\(int x, int y\);) s
+( }) s
+(     ) s
+( // java.awt.Polygon - page 265 Nutshell 1.ed - 322 Nutshell 2.ed) s
+( extern public class Polygon extends Object in "java.awt" {) s
+(   public Polygon\(\);) s
+(   public void addPoint\(int x, int y\);) s
+(   public boolean contains\(int x, int y\);) s
+(   public Rectangle getBoundingBox\(\);) s
+(   public boolean Inside\(int x, int y\);) s
+(   public void translate\(int deltaX, int deltaY\);) s
+( }) s
+( ) s
+( // java.awt.PopupMenu - not in Java 1.0 - 322 Nutshell 2.ed) s
+( extern public class PopupMenu extends Menu in "java.awt" {) s
+(   public PopupMenu\(\);) s
+(   public PopupMenu\(String label\);) s
+(   public synchronized void addNotify\(\);) s
+(   public void show\(Component origin, int x, int y\);) s
+( }) s
+( ) s
+( ) s
+( // java.awt.Rectangle - page 265 Nutshell 1.ed - 324 Nutshell 2.ed) s
+( // see also JoosRectangle to get at instance variables) s
+( extern public class Rectangle extends Object in "java.awt" {) s
+(   public Rectangle\(\);) s
+(   public Rectangle\(Rectangle r\);) s
+(   public Rectangle\(int x, int y, int width, int height\);) s
+(   public Rectangle\(int width, int height\);) s
+(   public Rectangle\(Point p,Dimension d\);) s
+(   public Rectangle\(Point p\);) s
+(   public Rectangle\(Dimension d\);) s
+(   public void add\(Rectangle r\);) s
+(   public boolean equals\(Object obj\); // overrides Object.equals\(\)) s
+(   public void grow\(int h, int v\);) s
+(   public boolean inside\(int x, int y\);) s
+(   public Rectangle intersection\(Rectangle r\);) s
+/sd 0 def
+6 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 7 7
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( awtlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+11 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public boolean intersects\(Rectangle r\);) s
+(   public boolean isEmpty\(\);) s
+(   public void move\(int x, int y\);) s
+(   public void reshape\(int x, int y, int width, int height\);) s
+(   public void resize\(int width, int height\);) s
+(   public void setBounds\(int x, int y, int width, int height\);) s
+(   public void setLocation\(int x, int y\);) s
+(   public void setSize\(int width, int height\);) s
+(   public String toString\(\); // Overrides Object.toString\(\)) s
+(   public void translate\(int x, int y\);) s
+(   public Rectangle union\(Rectangle r\); ) s
+( }) s
+( ) s
+( // java.awt.ScrollPane - Not in Java 1.0 - 325 Nutshell 2.ed) s
+( // see also joos.lib.JoosConstants, SCROLLBARS_ALWAYS) s
+( //                                  SCROLLBARS_AS_NEEDED) s
+( //                                  SCROLLBARS_NEVER) s
+( extern public class ScrollPane extends Container in "java.awt" {) s
+(   public ScrollPane\(\);) s
+(   public ScrollPane\(int scrollbarDisplayPolicy\);) s
+(   public void addNotify\(\);) s
+(   public void doLayout\(\);) s
+(   public int getHScrollbarHeight\(\);) s
+(   public Point getScrollPosition\(\);) s
+(   public int getScrollbarDisplayPolicy\(\);) s
+(   public int getVScrollbatWidth\(\);) s
+(   public Dimension getViewportSize\(\);) s
+(   public void printComponents\(Graphics g\);) s
+(   public void setLayout\(LayoutManager mgr\);) s
+(   public void setScrollPosition\(int x, int y\);) s
+( }) s
+( ) s
+( // java.awt.Scrollbar - page 266 Nutshell 1.ed - 327 Nutshell 2.ed) s
+( //     see also joos.lib.JoosConstants, SCROLLBAR_HORIZONTAL) s
+( //                                      SCROLLBAR_VERTICAL) s
+( extern public class Scrollbar extends Component in "java.awt" {) s
+(   public Scrollbar\(\);) s
+(   public Scrollbar\(int orientation\);) s
+(   public Scrollbar\(int orientation, int value, int visible, int minimum, int maxim) s
+( um\);) s
+(   // public Scrollbar\(int orientation, int value, int visible,) s
+(   //                     int minimum, int maximum\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\)) s
+(   public int getLineIncrement\(\);) s
+(   public int getMaximum\(\);) s
+(   public int getMinimum\(\);) s
+(   public int getOrientation\(\);) s
+(   public int getPageIncrement\(\);) s
+(   public int getValue\(\);) s
+(   public int getVisible\(\);) s
+(   public void setLineIncrement\(int l\);) s
+(   public void setPageIncrement\(int l\);) s
+(   public void setValue\(int value\);) s
+(   public void setValues\(int value, int visible, int min, int max\);) s
+( }) s
+( ) s
+( // java.awt.TextArea - page 267 Nutshell 1.ed - 329 Nutshell 2.ed) s
+( extern public class TextArea extends TextComponent in "java.awt" {) s
+(   public TextArea\(\);) s
+(   public TextArea\(String text\);) s
+(   public TextArea\(int rows, int cols\);) s
+(   public TextArea\(String text, int rows, int cols\);) s
+(   // other constructors possible) s
+(   public synchronized void addNotify\(\); // Overrides Component.addNotify\(\)) s
+(   public void appendText\(String str\);) s
+(   public int getColumns\(\);) s
+(   public int getRows\(\);) s
+(   public void InsertText\(String str,int pos\);) s
+(   public Dimension mimimumSize\(\); // overrides Component.mimimumSize\(\)) s
+(   public Dimension preferredSize\(\); // overrides Component.preferredSize\(\)) s
+(   public void replaceText\(String str, int start, int end\); ) s
+/sd 1 def
+12 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( }) s
+( ) s
+( // java.awt.TextComponent - page 268 Nutshell 1.ed - 330 Nutshell 2.ed) s
+( extern public class TextComponent extends Component in "java.awt" {) s
+(   public TextComponent\(\);  // doesn't have a constructor) s
+(   public String getSelectedText\(\);) s
+(   public int getSelectionEnd\(\);) s
+(   public int getSelectionStart\(\);) s
+(   public String getText\(\);) s
+(   public boolean isEditable\(\);) s
+(   public synchronized void removeNotify\(\); // overrides Component.removeNotify\(\)) s
+(   public void select\(int selStart, int selEnd\);) s
+(   public void selectAll\(\);) s
+(   public void setEditable\(boolean t\);) s
+(   public void setText\(String t\);) s
+( } ) s
+( ) s
+( // java.awt.TextField - page 268 Nutshell 1.ed - 331 Nutshell 2.ed) s
+( extern public class TextField extends TextComponent in "java.awt" {) s
+(   public TextField\(\);) s
+(   public TextField\(String text\);) s
+(   public TextField\(int columns\);) s
+(   public TextField\(String text, int cols\);) s
+(   public synchronized void addNotify\(\); // overrides Component.addNotify\(\)) s
+(   public boolean echoCharIsSet\(\);) s
+(   public int getColumns\(\);) s
+(   public int getEchoChar\(\);) s
+(   public Dimension minimumSize\(\); // overrides Component.mimimumSize\(\)) s
+(   public Dimension preferredSize\(\); // overrides Component.preferredSize\(\)) s
+(   public void setColumns\(int columns\);) s
+(   public void setEchoChar\(char c\);) s
+( }) s
+( ) s
+( // java.awt.Toolkit - page 269 Nutshell 1.ed - 331 Nutshell 2.ed) s
+( extern public abstract class Toolkit extends Object in "java.awt" {) s
+(   public Toolkit\(\);) s
+(   public abstract int checkImage\(Image image, int width, int height,) s
+(                                  ImageObserver observer\);) s
+(   public abstract Image createImage\(ImageProducer producer\);) s
+(   // public abstract ColorModel getColorModel\(\);) s
+(   public abstract FontMetrics getFontMetrics\(Font font\);) s
+(   // public abstract Image getImage\(String filename\);) s
+(   public abstract Image getImage\(URL url\);) s
+(   public abstract int getScreenResolution\(\);) s
+(   public abstract Dimension getScreenSize\(\);) s
+(   public abstract boolean prepareImage\(Image image, int width,) s
+(                                        int height, ImageObserver observer\);) s
+(   public abstract void sync\(\); ) s
+( }) s
+( ) s
+( // java.awt.Window - page 270 Nutshell 1.ed - 333 Nutshell 2.ed) s
+( extern public class Window extends Container in "java.awt" {) s
+(   public Window\(Frame parent\);) s
+(   public synchronized void AddNotify\(\); // overrides Container.addNotify\(\)) s
+(   public synchronized void dispose\(\);) s
+(   public Toolkit getToolkit\(\); // overrides Component.getToolkit\(\)) s
+(   public boolean isShowing\(\);) s
+(   public final String getWarningString\(\);) s
+(   public synchronized void pack\(\);) s
+(   public synchronized void show\(\); // overrides Component.show\(\)) s
+(   public void toBack\(\);) s
+(   public void toFront\(\);) s
+( }) s
+/sd 0 def
+7 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 8 8
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( javalib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+1 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( // -----------------------------------------------------------------) s
+( // The following classes are defined in the standard java class) s
+( //   libraries,  and are described in the book:) s
+( //   "The Java\(tm\) Language Specification", by Gosling, Joy and Steele,) s
+( //   published by Addison-Wesley.   On-line copies of the book are) s
+( //   available via <http://java.sun.com/doc/language_specification.html>.) s
+( // -----------------------------------------------------------------) s
+( ) s
+( // java.lang.Object - Section 20.1, page 458 ) s
+( // see also joos.lib.JoosObject to get the wait method) s
+( extern public class Object in "java.lang" { ) s
+(   public Object\(\);) s
+(   public String toString\(\);) s
+(   public final void notify\(\); // throws IllegalMonitorStateException) s
+(   public final void notifyAll\(\); // throws IllegalMonitorStateException) s
+(   public boolean equals\(Object obj\);) s
+( }) s
+( ) s
+( // java.lang.Boolean - Section 20.4, page 469 - page 445 Nutshell 2.ed) s
+( extern public final class Boolean in "java.lang" {) s
+(   public Boolean\(boolean value\);) s
+(   public Boolean\(String s\);) s
+(   public String toString\(\);) s
+(   public boolean equals\(Object obj\);) s
+(   public boolean booleanValue\(\);) s
+( }) s
+( ) s
+( // java.lang.Character - page 445 Nutshell 2.ed) s
+( extern public final class Character in "java.lang" {) s
+(   public Character\(char value\);) s
+(   public boolean isDefined\(char ch\);) s
+(   public boolean isDigit\(char ch\);) s
+(   public boolean isISOControl\(char ch\);) s
+(   public boolean isLetter\(char ch\);) s
+(   public boolean isLetterOrDigit\(char ch\);) s
+(   public boolean isLowerCase\(char ch\);) s
+(   public boolean isSpaceChar\(char ch\);) s
+(   public boolean isTitleCase\(char ch\);) s
+(   public boolean isUpperCase\(char ch\);) s
+(   public boolean isWhitespace\(char ch\);) s
+(   public char toLowerCase\(char ch\);) s
+(   public char toTitleCase\(char ch\);) s
+(   public char toUpperCase\(char ch\);) s
+(   public char charValue\(\);) s
+(   public boolean equals\(Object obj\);) s
+(   public String toString\(\);) s
+( }) s
+( ) s
+( // java.lang.Integer - Section 20.6, page 487 - page 459 Nutshell 2.ed) s
+( extern public final class Integer in "java.lang" {) s
+(   public Integer\(int value\);) s
+(   public Integer\(String s\);) s
+(   public String toString\(\);) s
+(   public boolean equals\(Object obj\);) s
+(   public int intValue\(\);) s
+( }) s
+( ) s
+( // java.lang.Runnable - page 467 Nutshell 2.ed) s
+( //   should be an interface, don't extend it in Joos programs, rather) s
+( //     extend JoosRunnable which is a real class - see joos.lib.JoosRunnable) s
+( extern public abstract class Runnable extends Object in "java.lang" {) s
+(  public Runnable\(\);) s
+(  public abstract void run\(\);) s
+( }) s
+( ) s
+( // java.lang.String - Section 20.12, page 531 - page 472 Nutshell 2.ed) s
+( extern public final class String in "java.lang" {) s
+(   public String\(\);) s
+(   public String\(String value\);) s
+(   public String\(StringBuffer buffer\);) s
+(   public String vlaueOf\(boolean b\);) s
+/sd 1 def
+2 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public char charAt\(int index\);) s
+(   public int compareTo\(String anotherString\);) s
+(   public boolean endsWith\(String suffix\);) s
+(   public boolean equals\(Object obj\);) s
+(   public boolean equalsIgnoreCase\(String anotherString\);) s
+(   public int indexOf\(String str, int fromIndex\);) s
+(   public int lastIndexOf\(String str, int fromIndex\);) s
+(   public int length\(\);) s
+(   public boolean regionMatches\(boolean ignoreCase, int toffset,) s
+(                        String other, int ooffset, int len\);) s
+(   public boolean startsWith\(String prefix, int toffset\);) s
+(   public String substring\(int beginIndex, int endIndex\);) s
+(   public String concat\(String str\);) s
+(   public String toLowerCase\(\);) s
+(   public String toUpperCase\(\);) s
+(   public String toString\(\);) s
+(   public String trim\(\);) s
+( }) s
+( ) s
+( // java.lang.StringBuffer - Section 20.13 - page 473 Nutshell 2.ed) s
+( extern public class StringBuffer in "java.lang" {) s
+(   public StringBuffer\(\);) s
+(   public StringBuffer\(int length\);) s
+(   public StringBuffer\(String str\);) s
+(   public String toString\(\);) s
+(   public int length\(\);) s
+(   public void setLength\(int newLength\);) s
+(   public int capacity\(\);) s
+(   public void ensureCapacity\(int minimumCapacity\);) s
+(   public StringBuffer append\(Object obj\);) s
+(   public StringBuffer insert\(int offset, Object obj\);) s
+(   public StringBuffer reverse\(\);) s
+( }) s
+( ) s
+( // java.lang.Thread - page 325 in Java in a Nutshell 1.ed - page 476 Nutshell 2.ed) s
+( // should be extends Object implements Runnable) s
+( // see also joos.lib.JoosThread) s
+( extern public class Thread extends Runnable in "java.lang" {) s
+(   public Thread\(\);) s
+(   public Thread\(Runnable target\);) s
+(   public Thread\(String name\);) s
+(   public Thread\(Runnable target,String name\);) s
+(   public void checkAccess\(\); // throws SecurityException \(runtime\)) s
+(   public int countStackFrames\(\); // throws IllegalThreadStateException \(runtime\)) s
+(   public final String getName\(\);) s
+(   public final int getPriority\(\);) s
+(   public final boolean isAlive\(\);) s
+(   public final boolean isDaemon\(\);) s
+(   public final void resume\(\);) s
+(   public void run\(\);) s
+(   public final void setDaemon\(boolean on\); // throws IllegalThreadStateException) s
+(   public final void setName\(String name\);) s
+(   public final void setPriority\(int Priority\); // throws IllegalArgumentExc) s
+(   public synchronized void start\(\); // throws IllegalThreadStateException ) s
+(   public final void stop\(\);) s
+(   public final void suspend\(\);) s
+(   public String toString\(\); // overrides Object.toString\(\)) s
+( }) s
+( ) s
+( // java.util.BitSet - Section 21.2 - page 618 - page 445 Nutshell 2.ed) s
+( extern public class BitSet in "java.util" {) s
+(   public BitSet\(\);) s
+(   public BitSet\(int nbits\);) s
+(   public String toString\(\);) s
+(   public boolean equals\(Object obj\);) s
+(   public boolean get\(int bitIndex\);) s
+(   public void set\(int bitIndex\);) s
+(   public void clear\(int bitIndex\);) s
+(   public void and\(BitSet set\);) s
+(   public void or\(BitSet set\);) s
+(   public void xor\(BitSet set\);) s
+/sd 0 def
+8 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 9 9
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( javalib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+3 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public int size\(\);) s
+( }) s
+( ) s
+( // java.util.Date - Section 21.3, page 622 - page 531 Nutshell 2.ed) s
+( extern public class Date in "java.util" {) s
+(   public Date\(\);) s
+(   public Date\(int year, int month, int date, ) s
+(                 int hours, int minutes, int seconds\);) s
+(   public String toString\(\);) s
+(   public boolean equals\(Object obj\);) s
+(   public int getYear\(\);) s
+(   public void setYear\(int year\);) s
+(   public int getMonth\(\);) s
+(   public void setMonth\(int month\);) s
+(   public int getDate\(\);) s
+(   public void setDate\(int date\);) s
+(   public int getDay\(\);) s
+(   public int getHours\(\);) s
+(   public void setHours\(int hours\);) s
+(   public int getMinutes\(\);) s
+(   public int setMinutes\(int minutes\);) s
+(   public int getSeconds\(\);) s
+(   public int setSeconds\(int seconds\);) s
+(   public boolean before\(Date when\);) s
+(   public boolean after\(Date when\);) s
+(   public String toLocaleString\(\);) s
+(   public String toGMTString\(\);) s
+(   public int getTimezoneOffset\(\);) s
+( }) s
+( ) s
+( // java.util.Random - Section 21.9, page 646 - page 541 Nutshell 2.ed) s
+( extern public class Random in "java.util" {) s
+(   public Random\(\);) s
+(   public int nextInt\(\);) s
+( }) s
+( ) s
+( // java.util.Stack - page 543 Nutshell 2.ed) s
+( extern public class Stack in "java.util" {) s
+(   public Stack\(\);) s
+(   public boolean empty\(\);) s
+(   public synchronized Object peek\(\);) s
+(   public synchronized Object pop\(\);) s
+(   public Object push\(Object item\);) s
+(   public synchronized int search\(Object o\);) s
+( }) s
+( ) s
+( // java.util.StringTokenizer - Section 21.10, page 651 - 544 Nutshell 2.ed) s
+( extern public class StringTokenizer in "java.util" {) s
+(   public StringTokenizer\(String str, String delim, boolean returnTokens\);) s
+(   public StringTokenizer\(String str, String delim\);) s
+(   public StringTokenizer\(String str\);) s
+(   public boolean hasMoreTokens\(\);) s
+(   public String nextToken\(String delim\);) s
+(   public boolean hasMoreElements\(\);) s
+(   public Object nextElement\(\);) s
+(   public int countTokens\(\);) s
+( }) s
+( ) s
+( // java.util.Vector - Section 21.11, page 654 - page 545 Nutshell 2.ed) s
+( extern public class Vector in "java.util" { // implements Cloneable) s
+(   public Vector\(int initialCapacity, int capacityIncrement\);) s
+(   public Vector\(int initialCapacity\);) s
+(   public Vector\(\);) s
+(   public final String toString\(\); // overrides Object.toString\(\)) s
+(   public final Object elementAt\(int index\);) s
+(   public final void setElementAt\(Object obj, int index\);) s
+(   public final Object firstElement\(\);) s
+(   public final Object lastElement\(\);) s
+(   public final void addElement\(Object obj\);) s
+(   public final void insertElementAt\(Object obj, int index\);) s
+(   public final boolean removeElement\(Object obj\);) s
+/sd 1 def
+4 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public final void removeElementAt\(int index\);) s
+(   public final void removeAllElements\(\);) s
+(   public final boolean isEmpty\(\);) s
+(   public final int size\(\);) s
+(   public final void setSize\(int newSize\);) s
+(   public final int capacity\(\);) s
+(   public final void ensureCapacity\(int minCapacity\);) s
+(   public final void trimToSize\(\);) s
+(   public final boolean contains\(Object elem\);) s
+(   public final int indexOf\(Object elem\);) s
+(   public final int lastIndexOf\(Object elem\);) s
+( }) s
+/sd 0 def
+9 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 10 10
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Nov  9 1999 19:20) def
+( jooslib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+1 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( // -----------------------------------------------------------------) s
+( // The following external classes have been written in Java and) s
+( //   compiled to make a directory of class files that can be) s
+( //   accessed from JOOS programs.) s
+( // -----------------------------------------------------------------) s
+( ) s
+( extern public class JoosObject in "joos.lib" {) s
+(   public JoosObject\(Object myObject\);) s
+(   // returns true if interrupted ) s
+(   public final boolean wait\(int timeout\);) s
+( }) s
+( ) s
+( extern public class JoosString in "joos.lib" {) s
+(   public JoosString\(String value\);) s
+(   public boolean string2Bool\(\);) s
+(   public int string2Int\(\);) s
+(   public String valueOf\(\);) s
+( }) s
+( ) s
+( extern public class JoosIO in "joos.lib" {) s
+(   public JoosIO\(\);) s
+(   public void print\(String str\);) s
+(   public void println\(String str\);) s
+(   public void flush\(\);) s
+(   public int readInt\(\);) s
+(   public boolean readBoolean\(\);) s
+(   public String readLine\(\); ) s
+( }) s
+( ) s
+( extern public class JoosRandom in "joos.lib" {) s
+(   public JoosRandom\(\);) s
+(   public JoosRandom\(int seed\);) s
+(   public int nextInt\(\);) s
+(   public synchronized void setSeed\(int seed\);) s
+( }) s
+(   ) s
+( extern public class JoosRandomAccessFile in "joos.lib" {) s
+(   public JoosRandomAccessFile \(String name, String mode \) ;) s
+(   public void close\(\);) s
+(   public int length \(\);) s
+(   public int read \(\);) s
+(   public boolean readBoolean\(\);) s
+(   public int readInt\(\);) s
+(   public String readLine\(\);) s
+(   public String readUTF \(\);) s
+(   public int readUnsignedByte\(\);) s
+(   public int readUnsignedShort\(\);) s
+(   public void seek\(int pos\);) s
+(   public int skipBytes\(int n\);) s
+(   public void write\(int b\);) s
+(   public void writeBoolean\(boolean v\);) s
+(   public void writeByte\(int v\);) s
+(   public void writeBytes\(String s\);) s
+(   public void writeChar\(int v\);) s
+(   public void writeChars\(String s\);) s
+(   public void writeInt\(int v\);) s
+(   public void writeShort\(int v\);) s
+(   public void writeUTF\(String str\);) s
+( }) s
+( ) s
+( ) s
+( extern public abstract class JoosRunnable extends Runnable in "joos.lib" {) s
+(   public JoosRunnable\(\);) s
+(   public abstract void run\(\);) s
+( }) s
+( ) s
+( extern public class JoosThread in "joos.lib" {) s
+(   public JoosThread\(Thread t\);) s
+(   // get at constants) s
+(   public int MAX_PRIORITY\(\);) s
+(   public int MIN_PRIORITY\(\);) s
+/sd 1 def
+2 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public int NORM_PRIORITY\(\);) s
+(   // get at static methods) s
+(   public int activeCount\(\);) s
+(   public Thread currentThread\(\);) s
+(   public void dumpStack\(\);) s
+(   public boolean sleep\(int millis\);  // returns true if interrupted) s
+(   public void yield\(\);) s
+(   // make a join that takes an int argument and returns bool) s
+(   public synchronized boolean join\(int millis\); //  returns true if ) s
+(                                      // interrupted) s
+( }) s
+(   ) s
+( extern public class JoosFraction in "joos.lib" {) s
+(   public JoosFraction\(int top, int bot\);) s
+(   public int top\(\);) s
+(   public int bot\(\);) s
+(   public void setTop\(int t\);) s
+(   public void setBot\(int b\);) s
+( }) s
+( ) s
+( extern public class JoosConstants in "joos.lib" {) s
+(   public JoosConstants\(\); ) s
+( ) s
+(   // from java.awt.Color) s
+(   public Color black\(\);) s
+(   public Color blue\(\);) s
+(   public Color cyan\(\);) s
+(   public Color darkGray\(\);) s
+(   public Color gray\(\);) s
+(   public Color green\(\);) s
+(   public Color lightGray\(\);) s
+(   public Color magenta\(\);) s
+(   public Color orange\(\);) s
+(   public Color pink\(\);) s
+(   public Color red\(\);) s
+(   public Color white\(\);) s
+(   public Color yellow\(\);) s
+(  ) s
+(   // from java.awt.Event) s
+(   public int ACTION_EVENT\(\);) s
+(   public int GOT_FOCUS\(\);) s
+(   public int LOST_FOCUS\(\); ) s
+(   public int KEY_ACTION\(\);) s
+(   public int KEY_ACTION_RELEASE\(\); ) s
+(   public int KEY_PRESS\(\); ) s
+(   public int KEY_RELEASE\(\); ) s
+(   public int LIST_SELECT\(\); ) s
+(   public int LIST_DESELECT\(\);) s
+(   public int LOAD_FILE\(\); ) s
+(   public int SAVE_FILE\(\); ) s
+(   public int MOUSE_DOWN\(\);) s
+(   public int MOUSE_UP\(\);) s
+(   public int MOUSE_DRAG\(\);) s
+(   public int MOUSE_MOVE\(\);) s
+(   public int MOUSE_ENTER\(\);) s
+(   public int MOUSE_EXIT\(\);) s
+(   public int SCROLL_ABSOLUTE\(\);) s
+(   public int SCROLL_LINE_UP\(\);) s
+(   public int SCROLL_LINE_DOWN\(\);) s
+(   public int SCROLL_PAGE_UP\(\);) s
+(   public int SCROLL_PAGE_DOWN\(\);) s
+(   public int WINDOW_EXPOSE\(\);) s
+(   public int WINDOW_ICONIFY\(\);) s
+(   public int WINDOW_DEICONIFY\(\);) s
+(   public int WINDOW_DESTROY\(\);) s
+(   public int WINDOW_MOVED\(\);) s
+( ) s
+(   public int ALT_MASK\(\);) s
+(   public int CTRL_MASK\(\);) s
+(   public int META_MASK\(\);) s
+(   public int SHIFT_MASK\(\);) s
+/sd 0 def
+10 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 11 11
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Nov  9 1999 19:20) def
+( jooslib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+3 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(  ) s
+(   public int F1\(\);) s
+(   public int F2\(\);) s
+(   public int F3\(\);) s
+(   public int F4\(\);) s
+(   public int F5\(\);) s
+(   public int F6\(\);) s
+(   public int F7\(\);) s
+(   public int F8\(\);) s
+(   public int F9\(\);) s
+(   public int F10\(\);) s
+(   public int F11\(\);) s
+(   public int F12\(\);) s
+( ) s
+(   public int LEFT\(\);) s
+(   public int RIGHT\(\);) s
+(   public int UP\(\);) s
+(   public int DOWN\(\);) s
+(   public int HOME\(\);) s
+(   public int END\(\);) s
+(   public int PGUP\(\);) s
+(   public int PGDN\(\);) s
+( ) s
+(   // from java.awt.Font) s
+(   public int BOLD\(\);) s
+(   public int ITALIC\(\);) s
+(   public int PLAIN\(\);) s
+( ) s
+(   // from java.awt.Frame) s
+(   public int CROSSHAIR_CURSOR\(\);) s
+(   public int DEFAULT_CURSOR\(\);) s
+(   public int E_RESIZE_CURSOR\(\);) s
+(   public int HAND_CURSOR\(\); ) s
+(   public int MOVE_CURSOR\(\);) s
+(   public int NE_RESIZE_CURSOR\(\);) s
+(   public int NW_RESIZE_CURSOR\(\);) s
+(   public int N_RESIZE_CURSOR\(\);) s
+(   public int SE_RESIZE_CURSOR\(\); ) s
+(   public int SW_RESIZE_CURSOR\(\);) s
+(   public int S_RESIZE_CURSOR\(\); ) s
+(   public int TEXT_CURSOR\(\); ) s
+(   public int WAIT_CURSOR\(\);) s
+(   public int W_RESIZE_CURSOR\(\);) s
+( ) s
+(   // from java.awt.Label) s
+(   public int LABEL_CENTER\(\);) s
+(   public int LABEL_LEFT\(\);) s
+(   public int LABEL_RIGHT\(\);) s
+( ) s
+(   // from java.awt.ScrollPane) s
+(   public int SCROLLBRS_ALWAYS\(\);) s
+(   public int SCROLLBRS_AS_NEEDED\(\);) s
+(   public int SCROLLBRS_NEVER\(\);) s
+( ) s
+(   // from java.awt.Scrollbar) s
+(   public int SCROLLBAR_HORIZONTAL\(\);) s
+(   public int SCROLLBAR_VERTICAL\(\);) s
+( ) s
+(   // from java.awt.FileDiaglog) s
+(   public int LOAD\(\);) s
+(   public int SAVE\(\);) s
+( ) s
+(   // from java.awt.FlowLayout) s
+(   public int FLOWLAYOUT_CENTER\(\);) s
+(   public int FLOWLAYOUT_LEFT\(\);) s
+(   public int FLOWLAYOUT_RIGHT\(\);) s
+(   ) s
+(   // from java.awt.GridBagConstraints) s
+(   public int GRIDBAGCONSTRAINTS_CENTER\(\);) s
+(   public int EAST\(\);) s
+(   public int NORTH\(\);) s
+/sd 1 def
+4 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public int NORTHEAST\(\);) s
+(   public int NORTHWEST\(\);) s
+(   public int SOUTH\(\);) s
+(   public int SOUTHEAST\(\);) s
+(   public int SOUTHWEST\(\);) s
+(   public int WEST\(\);) s
+(   public int GRIDBAGCONSTRAINTS_HORIZONTAL\(\);) s
+(   public int GRIDBAGCONSTRAINTS_VERTICAL\(\);) s
+(   public int BOTH\(\);) s
+(   public int NONE\(\);) s
+(   public int RELATIVE\(\);) s
+(   public int REMAINDER\(\);) s
+( ) s
+(   // from java.awt.Image) s
+(   public Object UndefinedProperty\(\);) s
+( ) s
+(   // from java.awt.MediaTracker) s
+(   public int ABORTED\(\);) s
+(   public int COMPLETE\(\);) s
+(   public int ERRORED\(\);) s
+(   public int LOADING\(\);) s
+( ) s
+( }) s
+( ) s
+( ) s
+( // to get at several things in java.lang.System) s
+( extern public final class JoosSystem in "joos.lib" {) s
+(   public JoosSystem\(\);) s
+(   public int currentTimeMillis\(\); // is long in java) s
+(   public void gc\(\);) s
+(   public void runFinalization\(\);) s
+(   public void exit\(int value\);) s
+( }) s
+( ) s
+( // to get at public instanct variables in a Dimension) s
+( extern public class JoosDimension extends Object in "joos.lib" {) s
+(   // Constructor) s
+(   public JoosDimension\(Dimension d\);) s
+( ) s
+(   // get values ) s
+(   public int height\(\);) s
+(   public int width\(\);) s
+( ) s
+(   // set values) s
+(   public void setWidth\(int width\);) s
+(   public void setHeight\(int height\);) s
+( ) s
+(   // get Dimension) s
+(   public Dimension getDimension\(\);) s
+( ) s
+( }) s
+( ) s
+( // to get at public instance variables in an Event ) s
+( extern public class JoosEvent extends Object in "joos.lib" {) s
+(   // Constructor) s
+(   public JoosEvent\(Event e\);) s
+( ) s
+(   // get values) s
+(   public Object arg\(\);) s
+(   public int clickCount\(\);) s
+(   public Event evt\(\);) s
+(   public int id\(\);) s
+(   public int key\(\);) s
+(   public int modifiers\(\);) s
+(   public Object target\(\);) s
+(   public int when\(\);  // is long in java) s
+(   public int x\(\);) s
+(   public int y\(\);) s
+( ) s
+(   // set values) s
+(   public void setArg\(Object arg\);) s
+/sd 0 def
+11 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 12 12
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Nov  9 1999 19:20) def
+( jooslib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+5 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public void setClickCount\(int count\);) s
+(   public void setEvent\(Event e\);) s
+(   public void setId\(int id\);) s
+(   public void setKey\(int key\);) s
+(   public void setModifiers\(int modifiers\);) s
+(   public void setTarget\(Object target\);) s
+(   public void setWhen\(int when\);) s
+(   public void setX\(int x\);) s
+(   public void setY\(int y\);) s
+( ) s
+(   public Event getEvent\(\);) s
+( }) s
+(  ) s
+( // to get at methods add\(String name, Component comp\);) s
+( //   and             add\(Componenet comp, int pos\); ) s
+( extern public class JoosContainer extends Object in "joos.lib" {) s
+(   public JoosContainer\(Container c\);) s
+(   public Component addString\(String name, Component comp\);) s
+(   public Component addPosition\(Component comp, int pos\);) s
+( }) s
+( ) s
+( // to get at public instance variables in a GridBagConstraints ) s
+( extern public class JoosGridBagConstraints extends Object ) s
+(                       in "joos.lib" {) s
+( ) s
+(   // Constructor) s
+(   public JoosGridBagConstraints\(GridBagConstraints c\);) s
+( ) s
+(   // getting the values from fields) s
+(   public int anchor\(\);) s
+(   public int fill\(\);) s
+(   public int gridheight\(\);) s
+(   public int gridwidth\(\);) s
+(   public int gridx\(\);) s
+(   public int gridy\(\);) s
+(   public Insets insets\(\);) s
+(   public int ipadx\(\);) s
+(   public int ipady\(\);) s
+( ) s
+(   // setting the fields) s
+(   public void setAnchor\(int i\);) s
+(   public void setFill\(int i\);) s
+(   public void setGridHeight\(int i\);) s
+(   public void setGridWidth\(int i\);) s
+(   public void setGridX\(int i\);) s
+(   public void setGridY\(int i\);) s
+(   public void setInsets\(Insets i\);) s
+(   public void setIpadX\(int i\);) s
+(   public void setIpadY\(int i\);) s
+(   public void setWeightX\(JoosFraction f\);  ) s
+(   public void setWeightY\(JoosFraction f\);) s
+( ) s
+(   // getting back the GridBagConstraints) s
+(   public GridBagConstraints getConstraints\(\);) s
+( }) s
+( ) s
+( extern public class JoosMediaTracker extends Object in "joos.lib" {) s
+(   public JoosMediaTracker \(MediaTracker myTracker\);) s
+(   public boolean waitForAll\(\);) s
+(   public boolean waitForID\(int id\);) s
+(   public MediaTracker getMediaTracker\(\);) s
+( }) s
+( ) s
+( // to get at public instance variables in Rectangle) s
+( extern public class JoosRectangle extends Rectangle in "joos.lib" {) s
+(   // Constructor) s
+(   public JoosRectangle\(int x, int y, int w, int h\);) s
+(   public int x\(\);) s
+(   public int y\(\);) s
+(   public int width\(\);) s
+(   public int height\(\);) s
+/sd 1 def
+6 hp
+border
+hborder
+fnf
+/x0 x 1 get bm add def
+/y0 y 1 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+(   public void setX\(int x\);) s
+(   public void setY\(int y\);) s
+(   public void setWidth\(int w\);) s
+(   public void setHeight\(int h\);) s
+( }) s
+( ) s
+( ) s
+( extern public class JoosURL extends Object in "joos.lib" {) s
+(   public JoosURL\(URL context, String spec\);) s
+(   public Object getContent\(\);) s
+(   public URL getURL\(\);) s
+(   public boolean openConnection\(\);) s
+(   public boolean openOutputStream\(\);) s
+(   public boolean println\(String s\);) s
+(   public boolean print\(String s\);) s
+(   public boolean closeOutputStream\(\);) s
+(   public boolean openInputStream\(\);) s
+(   public String readLine\(\);) s
+(   public boolean closeInputStream\(\); ) s
+(   public String getErrorLog\(\);) s
+( } ) s
+( ) s
+( extern public class WigApplet extends Applet in "joos.lib" {) s
+(   public WigApplet\(\);) s
+(   public void addResult\(String name, String value\);) s
+(   public boolean openURL\(\);) s
+(   public boolean returnResults\(\);) s
+(   public void getResponse\(\);) s
+( }) s
+/sd 0 def
+12 sn
+lg lgp
+pagesave restore
+showpage
+%%Page: 13 13
+/pagesave save def
+/twp true def
+/fnfs 11 def
+/dfs fnfs 0.8 mul def
+/df /Helvetica dfs getfont def
+/dw df setfont td stringwidth pop def
+/sfnf filenmfontname fnfs getfont def
+/hm fnfs 0.25 mul def
+/hs 0.22 inch def
+/bfs 6.8 def
+/bdf /Courier-Bold bfs getfont def
+/bm bfs 0.7 mul def
+/bf /CourierBack bfs getfont def
+/cw bf setfont (0) stringwidth pop def 
+/itf /Courier-Oblique bfs getfont def
+/bif /Courier-BoldOblique bfs getfont def
+/tf /Times-Roman bfs getfont def
+/sf /Symbol bfs getfont def
+/l 71 def
+/c 83 def
+/pw
+   bf setfont (0) stringwidth pop c mul bm dup add add
+   def
+/ph
+   bfs l mul bm dup add add hs add
+   def
+/fns
+      pw
+      fnfs 4 mul dw add (Page 999) stringwidth pop add
+    sub
+  def
+/tm margin twp {3} {2} ifelse div def
+/sd 0 def
+/y [ rm ph add bm add
+          dup ] def
+/sny tm dfs sub def
+/snx sh tm dfs add sub def
+/dy sny def
+/dx tm dfs add def
+/x [ tm			% left page
+          dup 2 mul pw add	% right page
+        ] def
+/scx sh 2 div def
+/fny dy def
+/fnx scx def
+/ly fnfs 2 div y sd get add def
+/lx snx def
+/sx 1 def
+/d (Sep 14 1998 03:34) def
+( netlib.joos ) fn
+/footer filenm def
+sw 0 translate
+90 rotate
+1 hp
+border
+hborder
+fnf
+/x0 x 0 get bm add def
+/y0 y 0 get bm bfs add hs add sub def
+x0 y0 moveto
+bf setfont
+( // see also joos.lib.JoosURL) s
+( extern public final class URL extends Object in "java.net" {) s
+(   public URL\(String protocol, String host, int port, String file\); // throws Malfo) s
+( rmedURLException) s
+(   public URL\(String protocol, String host, String file\); // throws MalformedURLExc) s
+( eption) s
+(   public URL\(String spec\); // throws MalformedURLException) s
+(   public URL\(URL context,String spec\); // throws MalformedURLException) s
+(   public boolean equals\(Object obj\); // overrides Object.equals\(\);) s
+(   public String getFile\(\);) s
+(   public String getHost\(\);) s
+(   public int getPort\(\);) s
+(   public String getProtocol\(\);) s
+(   public String getRef\(\);) s
+(   public boolean sameFile\(URL other\);) s
+(   public String toExternalForm\(\);) s
+(   public String toString\(\); // overrides Object.toString\(\);) s
+( } ) s
+/sd 1 def
+/sd 0 def
+13 sn
+lg lgp
+pagesave restore
+showpage
+
+%%Trailer
+%%Pages: 13
+docsave restore end
