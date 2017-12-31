@@ -1,6 +1,6 @@
 # JOOS
 
-JOOS is a strict subset of Java designed by Laurie Hendren of McGill University and Michael Schwartzbach from Aarhus University in Denmark.
+JOOS (Java Object-Oriented Subset) is a strict subset of Java designed by Laurie Hendren of McGill University and Michael Schwartzbach from Aarhus University in Denmark.
 
 Design goals:
 * Extract the object-oriented essence of Java
